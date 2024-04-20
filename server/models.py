@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 
 from config import db
 
-class Customer(db.Model):
+class Customer(db.Model, SerializerMixin):
     __tablename__ = 'users'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(255))
@@ -16,7 +17,9 @@ class Customer(db.Model):
     reviews = db.relationship('Review', backref=db.backref('user', lazy=True))
     payments = db.relationship('Payment', backref=db.backref('user', lazy=True))
 
-class ServiceProvider(db.Model):
+    serialize_rules = ('-bookings.user',)
+
+class ServiceProvider(db.Model, SerializerMixin):
     __tablename__ = 'service_providers'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(255))
@@ -35,10 +38,12 @@ class ServiceProvider(db.Model):
     bookings = db.relationship('Booking', backref=db.backref('service_provider', lazy=True))
     services = db.relationship('Service', backref=db.backref('service_provider', lazy=True))
 
+    serialize_rules = ('-bookings.service_provider',)
+
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # user = db.relationship('User', backref=db.backref('service_providers', lazy=True))
 
-class Service(db.Model):
+class Service(db.Model, SerializerMixin):
     __tablename__ = 'services'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     service_title = db.Column(db.String(255))
@@ -46,7 +51,7 @@ class Service(db.Model):
     service_provider_id = db.Column(db.Integer, db.ForeignKey('service_providers.id'))
     # service_provider = db.relationship('ServiceProvider', backref=db.backref('services', lazy=True))
 
-class Booking(db.Model):
+class Booking(db.Model, SerializerMixin):
     __tablename__ = 'bookings'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     service_provider_id = db.Column(db.Integer, db.ForeignKey('service_providers.id'))
@@ -56,7 +61,10 @@ class Booking(db.Model):
     reviews = db.relationship('Review', backref=db.backref('booking', lazy=True))
     payments = db.relationship('Payment', backref=db.backref('booking', lazy=True))
 
-class Review(db.Model):
+    serialize_rules = ('-user.bookings', '-service_provider.bookings')
+
+
+class Review(db.Model, SerializerMixin):
     __tablename__ = 'reviews'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     stars_given = db.Column(db.Integer)
@@ -68,7 +76,7 @@ class Review(db.Model):
     # booking = db.relationship('Booking', backref=db.backref('reviews', lazy=True))
     # customer = db.relationship('User', backref=db.backref('reviews', lazy=True))
 
-class Payment(db.Model):
+class Payment(db.Model, SerializerMixin):
     __tablename__ = 'payments'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     payment_status = db.Column(db.String(255))
