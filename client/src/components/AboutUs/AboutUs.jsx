@@ -1,9 +1,7 @@
 
 
-// AboutUs.js
-
 import React, { useState } from "react";
-import "../style.css";
+
 
 const AboutUs = () => {
   const [selectedContact, setSelectedContact] = useState(null);
