@@ -1,4 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from sqlalchemy_serializer import SerializerMixin
 
 from config import db
@@ -9,7 +12,7 @@ class Customer(db.Model, SerializerMixin):
     fullname = db.Column(db.String(255))
     username = db.Column(db.String(255), unique=True)
     email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
+    password_hash = db.Column(db.String(128))
     location = db.Column(db.String(255))
     purchases = db.Column(db.Text)
 
@@ -18,6 +21,12 @@ class Customer(db.Model, SerializerMixin):
     payments = db.relationship('Payment', backref=db.backref('user', lazy=True))
 
     serialize_rules = ('-bookings.user',)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class ServiceProvider(db.Model, SerializerMixin):
     __tablename__ = 'service_providers'  # Explicitly specify table name
