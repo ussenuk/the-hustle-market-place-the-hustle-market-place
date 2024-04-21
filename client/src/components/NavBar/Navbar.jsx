@@ -1,0 +1,23 @@
+
+
+import React from "react";
+
+import { Link } from "react-router-dom";
+
+import "./navbar.css";
+
+const Navigation = () => {
+  return (
+    <div className="nav" id="nav">
+      <Link to="/">Home</Link>
+      {/* <Link to="/services">Services</Link> */}
+      {/* <Link to="/add-service">Add Service</Link> */}
+      <Link to="/about">About Us</Link>
+      {/* <Link to="/feedback">Feedback</Link> */}
+      {/* <Link to="/register">Register a Business</Link> */}
+      <Link to="/userlogin">Login as User</Link>
+    </div>
+  );
+};
+
+export default Navigation;
