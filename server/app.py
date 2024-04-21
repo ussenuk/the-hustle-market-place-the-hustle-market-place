@@ -41,7 +41,7 @@ def register_user():
     if Customer.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already in use'}), 409
 
-    new_user = Customer(fullname=fullname, username=username, email=email, password=password, location=location)
+    new_user = Customer(fullname=fullname, username=username, email=email, location=location)
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
