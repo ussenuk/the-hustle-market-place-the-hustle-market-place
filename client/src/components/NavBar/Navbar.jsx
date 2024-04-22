@@ -1,5 +1,7 @@
 
 
+// client/src/components/NavBar/Navbar.jsx
+
 import React from "react";
 
 import { Link } from "react-router-dom";
@@ -14,7 +16,7 @@ const Navigation = () => {
       {/* <Link to="/add-service">Add Service</Link> */}
       <Link to="/about">About Us</Link>
       {/* <Link to="/feedback">Feedback</Link> */}
-      {/* <Link to="/register">Register a Business</Link> */}
+      <Link to="/businesslogin">Business Login/Register</Link>
       <Link to="/userlogin">Login as User</Link>
     </div>
   );

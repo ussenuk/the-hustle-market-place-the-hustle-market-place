@@ -34,15 +34,16 @@ class ServiceProvider(db.Model, SerializerMixin):
     fullname = db.Column(db.String(255))
     username = db.Column(db.String(255), unique=True)
     email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
+    password_hash = db.Column(db.String(255))
     service_title = db.Column(db.String(255))
     service_category = db.Column(db.String(255))
     pricing = db.Column(db.Integer)
-    hours_available = db.Column(db.DateTime)
+    # hours_available = db.Column(db.DateTime)
+    # hours_available = db.Column(db.String(255))
     location = db.Column(db.String(255))
-    profile_picture = db.Column(db.String(255))
-    video_demo_of_service_offered = db.Column(db.String(255))
-    documents = db.Column(db.String(255))
+    # profile_picture = db.Column(db.String(255))
+    # video_demo_of_service_offered = db.Column(db.String(255))
+    # documents = db.Column(db.String(255))
 
     bookings = db.relationship('Booking', backref=db.backref('service_provider', lazy=True))
     services = db.relationship('Service', backref=db.backref('service_provider', lazy=True))
@@ -51,6 +52,12 @@ class ServiceProvider(db.Model, SerializerMixin):
 
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # user = db.relationship('User', backref=db.backref('service_providers', lazy=True))
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Service(db.Model, SerializerMixin):
     __tablename__ = 'services'  # Explicitly specify table name

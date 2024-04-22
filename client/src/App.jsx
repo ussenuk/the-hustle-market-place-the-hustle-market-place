@@ -3,16 +3,15 @@
 // import viteLogo from '/vite.svg'
 // import './App.css'
 
-
+// client/src/App.jsx
 
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header";
 import HomePage from "./components/HomePage/HomePage";
 import AboutUs from "./components/AboutUs/AboutUs";
-
 import UserLogin from "./components/Userlogin/UserLogin";
-
+import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import Navigation from './components/NavBar/Navbar';
 
 const App = () => {
@@ -26,9 +25,8 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/userlogin" element={<UserLogin />} />
-
+          <Route path="/businesslogin" element={<BusinessLogin />} />
         </Routes>
-
       </div>
     </Router>
   );
