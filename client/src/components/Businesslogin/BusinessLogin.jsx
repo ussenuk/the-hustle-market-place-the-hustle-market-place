@@ -17,9 +17,9 @@ const BusinessLogin = () => {
     pricing: "",
     hours_available: "",
     location: "",
-    // profilePicture: "",
-    // videoDemoOfServiceOffered: "",
-    // documents: "",
+    profile_picture: null,
+    video_demo_of_service_offered: null,
+    documents: null,
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -27,6 +27,11 @@ const BusinessLogin = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileInputChange = (e) => {
+    const { name, files } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: files[0] }));
   };
 
   const validateForm = () => {
@@ -45,66 +50,83 @@ const BusinessLogin = () => {
         newErrors.service_category = "Service category is required";
       if (!formData.pricing) newErrors.pricing = "Pricing is required";
       if (!formData.hours_available)
-        newErrors.hours_available = "Hours available are required"; 
+        newErrors.hours_available = "Hours available are required";
       if (!formData.location) newErrors.location = "Location is required";
-     
+      if (!formData.profile_picture)
+        newErrors.profile_picture = "Profile picture is required";
+      if (!formData.documents) newErrors.documents = "Documents are required";
     }
 
     return newErrors;
   };
-const handleSubmit = (e) => {
-  e.preventDefault();
-  const newErrors = validateForm();
-  setErrors(newErrors);
-  if (Object.keys(newErrors).length === 0) {
-    const endpoint = isLogin ? "businesslogin" : "businessregister";
-    const payload = isLogin
-      ? { email: formData.email, password: formData.password }
-      : { ...formData, pricing: parseInt(formData.pricing) };
 
-    fetch(`http://localhost:5555/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Failed to process the request");
-      })
-      .then((data) => {
-        setSuccessMessage(
-          `Successfully ${
-            isLogin ? "logged in" : "registered"
-          }. Welcome to Hutle.`
-        );
-        // Clear form fields
-        setFormData({
-          fullname: "",
-          username: "",
-          email: "",
-          password: "",
-          service_title: "",
-          service_category: "",
-          pricing: "",
-          hours_available: "",
-          location: "",
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      const endpoint = isLogin ? "businesslogin" : "businessregister";
+      let payload;
+
+      if (!isLogin) {
+        payload = new FormData();
+        Object.keys(formData).forEach((key) => {
+          if (formData[key] != null) {
+            payload.append(key, formData[key]);
+          }
         });
-        navigate("/"); // Adjust the path as needed
-      })
-      .catch((error) => {
-        console.error(
-          `Error during ${isLogin ? "login" : "registration"}: `,
-          error
-        );
-        setErrors({ form: error.message });
-      });
-  }
-};
+      } else {
+        // Construct JSON payload for login
+        payload = {
+          email: formData.email,
+          password: formData.password,
+        };
+      }
 
+      fetch(`http://localhost:5555/${endpoint}`, {
+        method: "POST",
+        headers: isLogin ? { "Content-Type": "application/json" } : undefined,
+        body: isLogin ? JSON.stringify(payload) : payload,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Failed to process the request");
+        })
+        .then((data) => {
+          setSuccessMessage(
+            `Successfully ${
+              isLogin ? "logged in" : "registered"
+            }. Welcome to Hutle.`
+          );
+          // Clear form fields
+          setFormData({
+            fullname: "",
+            username: "",
+            email: "",
+            password: "",
+            service_title: "",
+            service_category: "",
+            pricing: "",
+            hours_available: "",
+            location: "",
+            profile_picture: null,
+            video_demo_of_service_offered: null,
+            documents: null,
+          });
+          navigate("/"); // Adjust the path as needed
+        })
+        .catch((error) => {
+          console.error(
+            `Error during ${isLogin ? "login" : "registration"}: `,
+            error
+          );
+          setErrors({ form: error.message });
+        });
+    }
+  };
 
   return (
     <div className="business-access-container">
@@ -122,10 +144,6 @@ const handleSubmit = (e) => {
               value={formData.fullname}
               onChange={handleInputChange}
             />
-            {errors.fullname && (
-              <div className="error-message">{errors.fullname}</div>
-            )}
-
             <input
               type="text"
               name="username"
@@ -133,10 +151,6 @@ const handleSubmit = (e) => {
               value={formData.username}
               onChange={handleInputChange}
             />
-            {errors.username && (
-              <div className="error-message">{errors.username}</div>
-            )}
-
             <input
               type="text"
               name="service_title"
@@ -144,10 +158,6 @@ const handleSubmit = (e) => {
               value={formData.service_title}
               onChange={handleInputChange}
             />
-            {errors.service_title && (
-              <div className="error-message">{errors.service_title}</div>
-            )}
-
             <input
               type="text"
               name="service_category"
@@ -155,10 +165,6 @@ const handleSubmit = (e) => {
               value={formData.service_category}
               onChange={handleInputChange}
             />
-            {errors.service_category && (
-              <div className="error-message">{errors.service_category}</div>
-            )}
-
             <input
               type="number"
               name="pricing"
@@ -166,10 +172,6 @@ const handleSubmit = (e) => {
               value={formData.pricing}
               onChange={handleInputChange}
             />
-            {errors.pricing && (
-              <div className="error-message">{errors.pricing}</div>
-            )}
-
             <input
               type="text"
               name="location"
@@ -177,9 +179,6 @@ const handleSubmit = (e) => {
               value={formData.location}
               onChange={handleInputChange}
             />
-            {errors.location && (
-              <div className="error-message">{errors.location}</div>
-            )}
             <input
               type="text"
               name="hours_available"
@@ -187,10 +186,32 @@ const handleSubmit = (e) => {
               value={formData.hours_available}
               onChange={handleInputChange}
             />
-            {errors.hours_available && (
-              <div className="error-message">{errors.hours_available}</div>
-            )}
-            
+            <label htmlFor="profilePicture">
+              Upload Profile Picture (Required)
+              <input
+                type="file"
+                name="profile_picture"
+                onChange={handleFileInputChange}
+                required
+              />
+            </label>
+            <label htmlFor="videoDemoOfServiceOffered">
+              Upload Video/Image of Service (Optional) Max 200mb
+              <input
+                type="file"
+                name="video_demo_of_service_offered"
+                onChange={handleFileInputChange}
+              />
+            </label>
+            <label htmlFor="documents">
+              Upload Required Documents (Required)
+              <input
+                type="file"
+                name="documents"
+                onChange={handleFileInputChange}
+                required
+              />
+            </label>
           </>
         )}
         <input
@@ -200,8 +221,6 @@ const handleSubmit = (e) => {
           value={formData.email}
           onChange={handleInputChange}
         />
-        {errors.email && <div className="error-message">{errors.email}</div>}
-
         <input
           type="password"
           name="password"
@@ -209,10 +228,11 @@ const handleSubmit = (e) => {
           value={formData.password}
           onChange={handleInputChange}
         />
-        {errors.password && (
-          <div className="error-message">{errors.password}</div>
-        )}
-
+        {Object.keys(errors).map((key) => (
+          <div className="error-message" key={key}>
+            {errors[key]}
+          </div>
+        ))}
         <button type="submit">{isLogin ? "Login" : "Register"}</button>
         <button type="button" onClick={() => setIsLogin(!isLogin)}>
           {isLogin ? "Need to register?" : "Already registered? Login here"}

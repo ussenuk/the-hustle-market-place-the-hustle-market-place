@@ -3,6 +3,8 @@ from config import app, db, CORS, api
 from flask_cors import CORS
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service
 from flask_restful import Resource, reqparse
+from werkzeug.utils import secure_filename
+import os
 # from datetime import datetime
 
 # Home route
@@ -69,30 +71,29 @@ def login_user():
 # Business registration
 @app.route('/businessregister', methods=['POST'])
 def register():
-    data = request.json
+    data = request.form  # Use form to include files
+    files = request.files
 
-    # List of required fields
-    required_fields = ['fullname', 'username', 'email', 'password',   
-                       'service_title', 'service_category', 'pricing', 'location']
-    
-                    # 'hours_available',
-                    #     'profile_picture', 
-                    #    'video_demo_of_service_offered', 'documents']
+    required_fields = ['fullname', 'username', 'email', 'password',
+                       'service_title', 'service_category', 'pricing', 'hours_available', 'location']
+    required_files = ['profile_picture', 'documents']
 
     # Check for missing fields
     missing_fields = [field for field in required_fields if not data.get(field)]
-    if missing_fields:
-        return jsonify({'message': f'Missing required fields: {", ".join(missing_fields)}'}), 400
+    missing_files = [file for file in required_files if not files.get(file)]
+    if missing_fields or missing_files:
+        missing = missing_fields + missing_files
+        return jsonify({'message': f'Missing required fields: {", ".join(missing)}'}), 400
 
-    # Check for existing email
-    if ServiceProvider.query.filter_by(email=data['email']).first():
-        return jsonify({'message': 'Email already exists'}), 400
-
-    # Convert 'hours_available' from ISO 8601 string to datetime object
-    # try:
-    #     hours_available = datetime.fromisoformat(data['hours_available'])
-    # except ValueError:
-    #     return jsonify({'message': 'Invalid datetime format for hours available'}), 400
+    # Save files and generate file paths
+    file_paths = {}
+    for file_key in ['profile_picture', 'video_demo_of_service_offered', 'documents']:
+        if file_key in files:
+            file = files[file_key]
+            filename = secure_filename(file.filename)
+            file_path = os.path.join('/home/moringa/Downloads', filename)
+            file.save(file_path)
+            file_paths[file_key] = file_path
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
@@ -101,18 +102,15 @@ def register():
         email=data['email'],
         service_title=data['service_title'],
         service_category=data['service_category'],
-        pricing=data['pricing'],
+        pricing=int(data['pricing']),
         hours_available=data['hours_available'],
         location=data['location'],
-        # profile_picture=data['profile_picture'],
-        # video_demo_of_service_offered=data['video_demo_of_service_offered'],
-        # documents=data['documents']
+        profile_picture=file_paths['profile_picture'],
+        documents=file_paths['documents'],
+        video_demo_of_service_offered=file_paths.get('video_demo_of_service_offered')  # None if not provided
     )
 
-    # Hash the password
     service_provider.set_password(data['password'])
-
-    # Add to the session and commit to the database
     db.session.add(service_provider)
     db.session.commit()
 
