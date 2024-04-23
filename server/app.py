@@ -102,7 +102,7 @@ def register():
         service_title=data['service_title'],
         service_category=data['service_category'],
         pricing=data['pricing'],
-        # hours_available=hours_available,
+        hours_available=data['hours_available'],
         location=data['location'],
         # profile_picture=data['profile_picture'],
         # video_demo_of_service_offered=data['video_demo_of_service_offered'],

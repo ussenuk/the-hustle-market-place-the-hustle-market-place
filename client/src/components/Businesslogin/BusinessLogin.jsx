@@ -15,7 +15,7 @@ const BusinessLogin = () => {
     service_title: "",
     service_category: "",
     pricing: "",
-    // hoursAvailable: "",
+    hours_available: "",
     location: "",
     // profilePicture: "",
     // videoDemoOfServiceOffered: "",
@@ -44,9 +44,10 @@ const BusinessLogin = () => {
       if (!formData.service_category)
         newErrors.service_category = "Service category is required";
       if (!formData.pricing) newErrors.pricing = "Pricing is required";
+      if (!formData.hours_available)
+        newErrors.hours_available = "Hours available are required"; 
       if (!formData.location) newErrors.location = "Location is required";
-    //   if (!formData.hoursAvailable)
-    //     newErrors.hoursAvailable = "Hours available are required"; 
+     
     }
 
     return newErrors;
@@ -89,6 +90,7 @@ const handleSubmit = (e) => {
           service_title: "",
           service_category: "",
           pricing: "",
+          hours_available: "",
           location: "",
         });
         navigate("/"); // Adjust the path as needed
@@ -178,16 +180,17 @@ const handleSubmit = (e) => {
             {errors.location && (
               <div className="error-message">{errors.location}</div>
             )}
-            {/* <input
+            <input
               type="text"
-              name="hoursAvailable"
-              placeholder= "Hours Available (e.g., '9 AM to 5 PM')"
-              value={formData.hoursAvailable}
+              name="hours_available"
+              placeholder="Hours Available (e.g., '8 AM to 5 PM')"
+              value={formData.hours_available}
               onChange={handleInputChange}
             />
-            {errors.hoursAvailable && (
-              <div className="error-message">{errors.hoursAvailable}</div>
-            )} */}
+            {errors.hours_available && (
+              <div className="error-message">{errors.hours_available}</div>
+            )}
+            
           </>
         )}
         <input

@@ -39,7 +39,7 @@ class ServiceProvider(db.Model, SerializerMixin):
     service_category = db.Column(db.String(255))
     pricing = db.Column(db.Integer)
     # hours_available = db.Column(db.DateTime)
-    # hours_available = db.Column(db.String(255))
+    hours_available = db.Column(db.String(255))
     location = db.Column(db.String(255))
     # profile_picture = db.Column(db.String(255))
     # video_demo_of_service_offered = db.Column(db.String(255))
