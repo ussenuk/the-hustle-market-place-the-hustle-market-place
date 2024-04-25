@@ -12,7 +12,9 @@ import HomePage from "./components/HomePage/HomePage";
 import AboutUs from "./components/AboutUs/AboutUs";
 import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
-import Navigation from './components/NavBar/Navbar';
+import AddServiceForm from "./components/AddServiceForm/AddServiceForm";
+import ServicesPage from "./components/ServicesPage/ServicesPage";
+import Navigation from "./components/NavBar/Navbar";
 
 const App = () => {
   return (
@@ -26,6 +28,8 @@ const App = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/userlogin" element={<UserLogin />} />
           <Route path="/businesslogin" element={<BusinessLogin />} />
+          <Route path="/servicespage" element={<ServicesPage />} />
+          <Route path="/addserviceform" element={<AddServiceForm />} />
         </Routes>
       </div>
     </Router>
