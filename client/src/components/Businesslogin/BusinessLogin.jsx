@@ -91,7 +91,7 @@ const handleSubmit = (e) => {
           pricing: "",
           location: "",
         });
-        navigate("/"); // Adjust the path as needed
+        navigate("/dashboard"); // Adjust the path as needed
       })
       .catch((error) => {
         console.error(

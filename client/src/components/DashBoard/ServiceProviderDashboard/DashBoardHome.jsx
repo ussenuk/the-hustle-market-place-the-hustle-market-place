@@ -1,4 +1,5 @@
 import React from 'react';
+import BookingTable from './pages/BookingTable'
 import './DashBoard.css'
 import { BsPeopleFill, BsFillBellFill,BsMailbox2Flag } from 'react-icons/bs'
 
@@ -38,6 +39,14 @@ function DashBoardHome() {
         
       
       </div>
+
+    
+
+    <BookingTable />
+    
+    
+
+
     </main>
   )
 }

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify,session
 from config import app, db, CORS, api
 from flask_cors import CORS
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service
@@ -20,9 +20,9 @@ class Home(Resource):
         )
 
         return response
+    
 
-api.add_resource(Home, '/')
-
+  
 
 # User Registration
 @app.route('/userregister', methods=['POST'])
@@ -129,10 +129,82 @@ def login():
     service_provider = ServiceProvider.query.filter_by(email=data['email']).first()
     if not service_provider or not service_provider.check_password(data['password']):
         return jsonify({'message': 'Invalid email or password'}), 401
-
+    
+    # # Storing user id in session
+    # session["user_id"] = service_provider.id
     # Handle authentication success here, for example, generate JWT token
-    return jsonify({'message': 'Login successful'}), 200
+    return service_provider.to_dict(), 200
 
+# class CheckSession(Resource):
+#     def get(self):
+#         user_id = session.get('user_id')
+#         if user_id:
+#             user = ServiceProvider.query.filter(ServiceProvider.id == user_id).first()
+#             return user.to_dict(), 200
+#         return {'message': '401: Not Authorized'}, 401
+        
+
+# api.add_resource(Home, '/')
+# api.add_resource(CheckSession, "/check_session")
+
+class Bookings(Resource):
+    def get(self):
+        booking_records = Booking.query.all()
+
+        booking_data = []
+
+        for record in booking_records:
+            # Fetching customer name
+            customer_name = Customer.query.filter_by(id=record.customer_id).first().fullname
+            # Fetching service provider name
+            service_provider_name = ServiceProvider.query.filter_by(id=record.service_provider_id).first().fullname
+            # Fetching payment status
+            payment_status = Payment.query.filter_by(booking_id=record.id).first().payment_status if record.payments else None
+
+            # Fetching service information
+            service_info = Service.query.filter_by(service_provider_id=record.service_provider_id).first()
+            service_title = service_info.service_title if service_info else None
+            service_category = service_info.service_category if service_info else None
+
+            booking_data.append(
+                {
+                    "booking_id": record.id,
+                    "customer": customer_name,
+                    "service_provider": service_provider_name,
+                    "service_title": service_title,
+                    "service_category": service_category,
+                    "service_provider": service_provider_name,
+                    "time_service_provider_booked": record.time_service_provider_booked,
+                    "payment_status": payment_status
+                }
+            )
+        return make_response(jsonify(booking_data), 200)
+    
+# Service API
+class Services(Resource):
+    def get(self):
+        services = Service.query.all()
+
+        serialized_services = []
+
+        for service in services:
+            # Fetch service provider name
+            service_provider_name = ServiceProvider.query.filter_by(id=service.service_provider_id).first().fullname
+
+            serialized_services.append({
+                "service_id": service.id,
+                "service_title": service.service_title,
+                "service_category": service.service_category,
+                "service_provider": service_provider_name,
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_services), 200)
+
+api.add_resource(Services, "/services", endpoint="services")
+
+api.add_resource(Bookings, "/booking", endpoint="booking")
+api.add_resource(Home, "/")
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
