@@ -1,9 +1,5 @@
 body {
   margin: 0;
-  padding: 0;
-  background-color: #1d2634;
-  color: #9e9ea4;
-  font-family: 'Montserrat', sans-serif;
 }
 
 .icon {
@@ -30,11 +26,29 @@ body {
 
 .grid-container {
   display: grid;
-  grid-template-columns: 260px 1fr 1fr 1fr;
+  background-color: #f9f9fb;
+  color: #9e9ea4;
+  font-family: 'Montserrat', sans-serif;
+  grid-template-columns: 260px 1.5fr 1.5fr 1fr;
   grid-template-rows: 0.2fr 3fr;
   grid-template-areas:
     'sidebar header header header'
-    'sidebar main main main';
+    'sidebar main main rightbar';
+  height: 100vh;
+}
+
+.grid-container-dark {
+  display: grid;
+  background-color: #263043;
+  color: #9e9ea4;
+  transition: all 0.3s;
+  font-family: 'Montserrat', sans-serif;
+  grid-template-columns: 260px 1.5fr 1.5fr 1fr;
+  grid-template-rows: 0.2fr 3fr;
+  grid-template-areas:
+    'sidebar header header header'
+    'sidebar main main rightbar';
+    
   height: 100vh;
 }
 
@@ -58,7 +72,7 @@ body {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
-  background-color: #263043;
+  /* background-color: #263043; */
   overflow-y: auto;
   transition: all 0.5s;
   -webkit-transition: all 0.5s;
@@ -121,7 +135,7 @@ body {
   grid-area: main;
   overflow-y: auto;
   padding: 20px 20px;
-  color: rgba(255, 255, 255, 0.95);
+  /* color: rgba(255, 255, 255, 0.95); */
 }
 
 .main-title {
@@ -149,11 +163,11 @@ body {
 }
 
 .card:nth-child(2) {
-  background-color: #ff6d00;
+  background-color: #d50000;
 }
 
 .card:nth-child(3) {
-  background-color: #4CAF50;
+  background-color: #ff6d00;
 }
 
 .card:nth-child(4) {
@@ -181,10 +195,21 @@ body {
 /* End Main  */
 
 
+/* Right Bar */
+.right-container {
+  grid-area: rightbar;
+  /* overflow-y: auto; */
+  padding: 20px 20px;
+}
+
+
+/* End Right Bar  */
+
+
 /* Medium <= 992px */
   
 @media screen and (max-width: 992px) {
-  .grid-container {
+  .grid-container .grid-container-dark {
     grid-template-columns: 1fr;
     grid-template-rows: 0.2fr 3fr;
     grid-template-areas:
@@ -231,4 +256,8 @@ body {
 .iconHutle {
   color: #4CAF50;
   font-size: 2.5rem;
+}
+
+.active-icon {
+  color: #4CAF50; /* You can adjust this to the desired highlight color */
 }

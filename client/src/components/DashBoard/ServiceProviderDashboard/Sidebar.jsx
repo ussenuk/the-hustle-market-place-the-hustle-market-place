@@ -1,10 +1,19 @@
 import React from 'react';
 import './DashBoard.css';
 import {BsCart3,BsPeopleFill, BsGrid1X2Fill} from 'react-icons/bs';
-  import { MdHomeRepairService,MdComment,MdHelpCenter } from "react-icons/md";
-  import { GiMechanicGarage } from "react-icons/gi";
+import { MdHomeRepairService,MdComment,MdHelpCenter, MdLogout } from "react-icons/md";
+import { GiMechanicGarage } from "react-icons/gi";
+import { Link,  useNavigate } from 'react-router-dom';
 
-function Sidebar({openSidebarToggle, OpenSidebar}) {
+
+function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick}) {
+  const navigate = useNavigate();
+
+  const handleSidebarClick = (path) => {
+    navigate(path);
+    OpenSidebar(); // Close sidebar after clicking a menu item
+  };
+
   return (
     <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
         <div className='sidebar-title'>
@@ -14,30 +23,34 @@ function Sidebar({openSidebarToggle, OpenSidebar}) {
             <span className='icon close_icon' onClick={OpenSidebar}>X</span>
         </div>
         <ul className='sidebar-list'>
-          <li className='sidebar-list-item'>
-            <a href=''>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('dashboard')}>
+            
               <BsGrid1X2Fill className='icon'/> Dashboard
-            </a>
+            
           </li>
-          <li className='sidebar-list-item'>
-            <a href=''>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('service')}>
+            
               <MdHomeRepairService className='icon'/> Service
-            </a>
+            
           </li>
-          <li className='sidebar-list-item'>
-            <a href=''>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('users')}>
+            
               <BsPeopleFill className='icon'/> Users
-            </a>
+           
           </li>
-          <li className='sidebar-list-item'>
-            <a href=''>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('reviews')}>
+            
               <MdComment className='icon'/> Comments and Reviews
-            </a>
+            
+          </li>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('help')}>
+            
+              <MdHelpCenter className='icon'/> Help
+            
           </li>
           <li className='sidebar-list-item'>
-            <a href=''>
-              <MdHelpCenter className='icon'/> Help
-            </a>
+
+              <MdLogout className='icon'/> Logout
           </li>
         
         
