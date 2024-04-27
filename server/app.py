@@ -1,28 +1,55 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify,session
+
+
+# server/app.py
+
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
 from config import app, db, CORS, api
-from flask_cors import CORS
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service
 from flask_restful import Resource, reqparse
-# from datetime import datetime
+from werkzeug.utils import secure_filename
+import os
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+
+# Initialize Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login_user_route'  # specify the login view
+
+@login_manager.user_loader
+def load_user(user_id):
+    
+    return Customer.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def handle_unauthorized():
+    # This handler will redirect to appropriate login route based on the session
+    if 'business_id' in session:
+        return redirect(url_for('logout_business_route'))
+    else:
+        return redirect(url_for('login_user_route'))
+
 
 # Home route
 class Home(Resource):
-
     def get(self):
+        if 'user_id' in session:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_in",
+                "user_id": session['user_id']
+            })
+        elif 'business_id' in session:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_in",
+                "business_id": session['business_id']
+            })
+        else:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_out"
+            })
 
-        response_dict = {
-            "message": "Welcome to the Home Page",
-        }
-
-        response = make_response(
-            response_dict,
-            200
-        )
-
-        return response
-    
-
-  
+api.add_resource(Home, '/')
 
 # User Registration
 @app.route('/userregister', methods=['POST'])
@@ -49,103 +76,98 @@ def register_user():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
-# User Login
 @app.route('/userlogin', methods=['POST'])
-def login_user():
+def login_user_route():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
-    if not email or not password:
-        return jsonify({'error': 'Missing email or password'}), 400
-
     user = Customer.query.filter_by(email=email).first()
-    if not user or not user.check_password(password):
-        return jsonify({'error': 'Invalid credentials'}), 401
+    if user and user.check_password(password):
+        session['user_id'] = user.id
+        # login_user(user)
+        return jsonify({'message': 'Logged in successfully', 'user_id': user.id}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
 
-    return jsonify({'message': 'Logged in successfully'}), 200
 
-
-# Business registration
-@app.route('/businessregister', methods=['POST'])
-def register():
-    data = request.json
-
-    # List of required fields
-    required_fields = ['fullname', 'username', 'email', 'password',   
-                       'service_title', 'service_category', 'pricing', 'location']
+# User Logout
+@app.route('/logout', methods=['GET'])
+def logout_user_route():
+    if 'user_id' in session:
+        session.pop('user_id')
     
-                    # 'hours_available',
-                    #     'profile_picture', 
-                    #    'video_demo_of_service_offered', 'documents']
+    return jsonify({'message': 'You have been logged out'}), 200
 
-    # Check for missing fields
-    missing_fields = [field for field in required_fields if not data.get(field)]
-    if missing_fields:
-        return jsonify({'message': f'Missing required fields: {", ".join(missing_fields)}'}), 400
 
-    # Check for existing email
-    if ServiceProvider.query.filter_by(email=data['email']).first():
-        return jsonify({'message': 'Email already exists'}), 400
 
-    # Convert 'hours_available' from ISO 8601 string to datetime object
-    # try:
-    #     hours_available = datetime.fromisoformat(data['hours_available'])
-    # except ValueError:
-    #     return jsonify({'message': 'Invalid datetime format for hours available'}), 400
+# Service Provider Registration
+
+@app.route('/businessregister', methods=['POST'])
+def register_business():
+    data = request.get_json()
+
+    # Extract fields from JSON data
+    fullname = data.get('fullname')
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    service_title = data.get('service_title')
+    service_category = data.get('service_category')
+    pricing = data.get('pricing')
+    hours_available = data.get('hours_available')
+    location = data.get('location')
+    
+
+    # Check for missing required fields
+    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location :
+        missing = ", ".join([field for field, value in [
+            ('fullname', fullname), ('username', username), ('email', email), ('password', password),
+            ('service_title', service_title), ('service_category', service_category), ('pricing', pricing),
+            ('hours_available', hours_available), ('location', location)
+        ] if not value])
+        return jsonify({'error': f'Missing required fields: {missing}'}), 400
+
+    
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
-        fullname=data['fullname'],
-        username=data['username'],
-        email=data['email'],
-        service_title=data['service_title'],
-        service_category=data['service_category'],
-        pricing=data['pricing'],
-        # hours_available=hours_available,
-        location=data['location'],
-        # profile_picture=data['profile_picture'],
-        # video_demo_of_service_offered=data['video_demo_of_service_offered'],
-        # documents=data['documents']
+        fullname=fullname,
+        username=username,
+        email=email,
+        service_title=service_title,
+        service_category=service_category,
+        pricing=pricing,
+        hours_available=hours_available,
+        location=location
     )
-
-    # Hash the password
-    service_provider.set_password(data['password'])
-
-    # Add to the session and commit to the database
+    service_provider.set_password(password)
     db.session.add(service_provider)
     db.session.commit()
 
     return jsonify({'message': 'Registration successful'}), 201
 
 
-# Business login
+# Service Provider Login
 @app.route('/businesslogin', methods=['POST'])
-def login():
-    data = request.json
-    if not data.get('email') or not data.get('password'):
-        return jsonify({'message': 'Email and password are required'}), 400
+def login_business_route():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
 
-    service_provider = ServiceProvider.query.filter_by(email=data['email']).first()
-    if not service_provider or not service_provider.check_password(data['password']):
-        return jsonify({'message': 'Invalid email or password'}), 401
+    service_provider = ServiceProvider.query.filter_by(email=email).first()
+    if service_provider and service_provider.check_password(password):
+        session['business_id'] = service_provider.id
+        return jsonify({'message': 'Logged in successfully', 'business_id': service_provider.id}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+
+# Service Provider Logout
+@app.route('/businesslogout', methods=['GET'])
+def logout_business_route():
     
-    # # Storing user id in session
-    # session["user_id"] = service_provider.id
-    # Handle authentication success here, for example, generate JWT token
-    return service_provider.to_dict(), 200
-
-# class CheckSession(Resource):
-#     def get(self):
-#         user_id = session.get('user_id')
-#         if user_id:
-#             user = ServiceProvider.query.filter(ServiceProvider.id == user_id).first()
-#             return user.to_dict(), 200
-#         return {'message': '401: Not Authorized'}, 401
-        
-
-# api.add_resource(Home, '/')
-# api.add_resource(CheckSession, "/check_session")
+    if 'business_id' in session:
+        session.pop('business_id')
+    return jsonify({'message': 'Logout successful'}), 200
 
 class Bookings(Resource):
     def get(self):
@@ -204,7 +226,7 @@ class Services(Resource):
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
-api.add_resource(Home, "/")
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
