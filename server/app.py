@@ -1,30 +1,55 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify
+
+
+# server/app.py
+
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
 from config import app, db, CORS, api
-from flask_cors import CORS
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
-# from datetime import datetime
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+
+# Initialize Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login_user_route'  # specify the login view
+
+@login_manager.user_loader
+def load_user(user_id):
+    
+    return Customer.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def handle_unauthorized():
+    # This handler will redirect to appropriate login route based on the session
+    if 'business_id' in session:
+        return redirect(url_for('logout_business_route'))
+    else:
+        return redirect(url_for('login_user_route'))
+
 
 # Home route
 class Home(Resource):
-
     def get(self):
-
-        response_dict = {
-            "message": "Welcome to the Home Page",
-        }
-
-        response = make_response(
-            response_dict,
-            200
-        )
-
-        return response
+        if 'user_id' in session:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_in",
+                "user_id": session['user_id']
+            }), 200
+        elif 'business_id' in session:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_in",
+                "business_id": session['business_id']
+            }), 200
+        else:
+            return jsonify({
+                "message": "Welcome to the Home Page",
+                "status": "logged_out"
+            }), 200
 
 api.add_resource(Home, '/')
-
 
 # User Registration
 @app.route('/userregister', methods=['POST'])
@@ -51,86 +76,102 @@ def register_user():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
-# User Login
 @app.route('/userlogin', methods=['POST'])
-def login_user():
+def login_user_route():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
-    if not email or not password:
-        return jsonify({'error': 'Missing email or password'}), 400
-
     user = Customer.query.filter_by(email=email).first()
-    if not user or not user.check_password(password):
-        return jsonify({'error': 'Invalid credentials'}), 401
+    if user and user.check_password(password):
+        session['user_id'] = user.id
+        # login_user(user)
+        return jsonify({'message': 'Logged in successfully', 'user_id': user.id}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
 
-    return jsonify({'message': 'Logged in successfully'}), 200
+
+# User Logout
+@app.route('/logout', methods=['GET'])
+def logout_user_route():
+    if 'user_id' in session:
+        session.pop('user_id')
+    
+    return jsonify({'message': 'You have been logged out'}), 200
 
 
-# Business registration
+
+# Service Provider Registration
+
 @app.route('/businessregister', methods=['POST'])
-def register():
-    data = request.form  # Use form to include files
-    files = request.files
+def register_business():
+    data = request.get_json()
 
-    required_fields = ['fullname', 'username', 'email', 'password',
-                       'service_title', 'service_category', 'pricing', 'hours_available', 'location']
-    required_files = ['profile_picture', 'documents']
+    # Extract fields from JSON data
+    fullname = data.get('fullname')
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    service_title = data.get('service_title')
+    service_category = data.get('service_category')
+    pricing = data.get('pricing')
+    hours_available = data.get('hours_available')
+    location = data.get('location')
+    
 
-    # Check for missing fields
-    missing_fields = [field for field in required_fields if not data.get(field)]
-    missing_files = [file for file in required_files if not files.get(file)]
-    if missing_fields or missing_files:
-        missing = missing_fields + missing_files
-        return jsonify({'message': f'Missing required fields: {", ".join(missing)}'}), 400
+    # Check for missing required fields
+    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location :
+        missing = ", ".join([field for field, value in [
+            ('fullname', fullname), ('username', username), ('email', email), ('password', password),
+            ('service_title', service_title), ('service_category', service_category), ('pricing', pricing),
+            ('hours_available', hours_available), ('location', location)
+        ] if not value])
+        return jsonify({'error': f'Missing required fields: {missing}'}), 400
 
-    # Save files and generate file paths
-    file_paths = {}
-    for file_key in ['profile_picture', 'video_demo_of_service_offered', 'documents']:
-        if file_key in files:
-            file = files[file_key]
-            filename = secure_filename(file.filename)
-            file_path = os.path.join('/home/moringa/Downloads', filename)
-            file.save(file_path)
-            file_paths[file_key] = file_path
+    
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
-        fullname=data['fullname'],
-        username=data['username'],
-        email=data['email'],
-        service_title=data['service_title'],
-        service_category=data['service_category'],
-        pricing=int(data['pricing']),
-        hours_available=data['hours_available'],
-        location=data['location'],
-        profile_picture=file_paths['profile_picture'],
-        documents=file_paths['documents'],
-        video_demo_of_service_offered=file_paths.get('video_demo_of_service_offered')  # None if not provided
+        fullname=fullname,
+        username=username,
+        email=email,
+        service_title=service_title,
+        service_category=service_category,
+        pricing=pricing,
+        hours_available=hours_available,
+        location=location
     )
-
-    service_provider.set_password(data['password'])
+    service_provider.set_password(password)
     db.session.add(service_provider)
     db.session.commit()
 
     return jsonify({'message': 'Registration successful'}), 201
 
 
-# Business login
+# Service Provider Login
 @app.route('/businesslogin', methods=['POST'])
-def login():
-    data = request.json
-    if not data.get('email') or not data.get('password'):
-        return jsonify({'message': 'Email and password are required'}), 400
+def login_business_route():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
 
-    service_provider = ServiceProvider.query.filter_by(email=data['email']).first()
-    if not service_provider or not service_provider.check_password(data['password']):
-        return jsonify({'message': 'Invalid email or password'}), 401
+    service_provider = ServiceProvider.query.filter_by(email=email).first()
+    if service_provider and service_provider.check_password(password):
+        session['business_id'] = service_provider.id
+        return jsonify({'message': 'Logged in successfully', 'business_id': service_provider.id}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
 
-    # Handle authentication success here, for example, generate JWT token
-    return jsonify({'message': 'Login successful'}), 200
+
+# Service Provider Logout
+@app.route('/businesslogout', methods=['GET'])
+def logout_business_route():
+    
+    if 'business_id' in session:
+        session.pop('business_id')
+    return jsonify({'message': 'Logout successful'}), 200
 
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
+
+

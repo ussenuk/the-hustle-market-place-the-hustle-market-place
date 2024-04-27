@@ -1,3 +1,7 @@
+
+
+# server/models.py
+
 from flask_sqlalchemy import SQLAlchemy
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,7 +10,10 @@ from sqlalchemy_serializer import SerializerMixin
 
 from config import db
 
-class Customer(db.Model, SerializerMixin):
+from flask_login import UserMixin
+
+
+class Customer(db.Model, SerializerMixin, UserMixin):
     __tablename__ = 'users'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(255))
@@ -14,6 +21,8 @@ class Customer(db.Model, SerializerMixin):
     email = db.Column(db.String(255), unique=True)
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(255))
+
+
     purchases = db.Column(db.Text)
 
     bookings = db.relationship('Booking', backref=db.backref('user', lazy=True))
@@ -27,8 +36,11 @@ class Customer(db.Model, SerializerMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    # def __repr__(self):
+    #     return f'<Customer {self.username}>'
 
-class ServiceProvider(db.Model, SerializerMixin):
+class ServiceProvider(db.Model, SerializerMixin, UserMixin):
     __tablename__ = 'service_providers'  # Explicitly specify table name
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(255))
@@ -40,9 +52,9 @@ class ServiceProvider(db.Model, SerializerMixin):
     pricing = db.Column(db.Integer)
     hours_available = db.Column(db.String(255))
     location = db.Column(db.String(255))
-    profile_picture = db.Column(db.String(255), nullable=False)
-    video_demo_of_service_offered = db.Column(db.String(255), nullable=True)
-    documents = db.Column(db.String(255), nullable=False)
+    # profile_picture = db.Column(db.String(255), nullable=False)
+    # video_demo_of_service_offered = db.Column(db.String(255), nullable=True)
+    # documents = db.Column(db.String(255), nullable=False)
 
     bookings = db.relationship('Booking', backref=db.backref('service_provider', lazy=True))
     services = db.relationship('Service', backref=db.backref('service_provider', lazy=True))

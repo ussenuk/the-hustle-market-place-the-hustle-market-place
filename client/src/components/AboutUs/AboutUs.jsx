@@ -31,7 +31,7 @@ const AboutUs = () => {
     <div>
       <h1>About Us</h1>
       <p>
-        Helping Hands is an organization started in 2024 with the aim of
+        Hutle is an organization started in 2024 with the aim of
         simplifying people's lives by providing the necessary services available
         when required.
       </p>
