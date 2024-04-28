@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import DashBoardPage from '../DashBoardPage';
 import RightBar from './RightBar';
 
-function DashBoard() {
+function DashBoard({onLogout, onLogin, user}) {
   // Retrieve dark mode state from localStorage or default to false
   const [isDark, setIsDark] = useState(
     localStorage.getItem('darkMode') === 'true' ? true : false
@@ -31,16 +31,24 @@ function DashBoard() {
     localStorage.setItem('darkMode', isDark);
   }, [isDark]);
 
-  return (
-    <div className={appClass}>
-      <DashBoardHeader OpenSidebar={OpenSidebar} isDark={isDark} setIsDark={setIsDark} />
-      <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} handleMenuItemClick={handleMenuItemClick}/>
-      <DashBoardPage selectedMenuItem={selectedMenuItem}/>
-      <RightBar />
-      
+  console.log(user)
+  if (user){
+    return (
+      <div className={appClass}>
+        <DashBoardHeader OpenSidebar={OpenSidebar} isDark={isDark} setIsDark={setIsDark} />
+        <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} handleMenuItemClick={handleMenuItemClick} onLogout={onLogout}/>
+        <DashBoardPage selectedMenuItem={selectedMenuItem}/>
+        <RightBar user={user}/>
+        
+  
+      </div>
+    );
 
-    </div>
-  );
+  } else {
+    return <h1>Service Provider not logged in. Please log in to view the Dashboard...</h1>;
+  }
+
+ 
 }
 
 export default DashBoard;
