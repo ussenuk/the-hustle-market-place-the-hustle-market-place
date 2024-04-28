@@ -38,7 +38,7 @@ const ServicesPage = () => {
           <li key={service.id}>
             <h3>{service.service_title}</h3>
             <p>Category: {service.service_category}</p>
-            <p>Provider ID: {service.service_provider_id}</p>
+            <p>Posted by: {service.service_provider_id}</p>
           </li>
         ))}
       </ul>
