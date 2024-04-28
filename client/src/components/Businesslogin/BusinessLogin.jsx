@@ -1,12 +1,17 @@
+
+
 // client/src/components/BusinessLogin/BusinessLogin.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./businesslogin.css";
 
 const BusinessLogin = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(true);
+  
   const [formData, setFormData] = useState({
     fullname: "",
     username: "",
@@ -15,208 +20,119 @@ const BusinessLogin = () => {
     service_title: "",
     service_category: "",
     pricing: "",
-    // hoursAvailable: "",
+    hours_available: "",
     location: "",
-    // profilePicture: "",
-    // videoDemoOfServiceOffered: "",
-    // documents: "",
+    
   });
-  const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const businessId = sessionStorage.getItem("business_id");
+    if (businessId) {
+      setIsLoggedIn(true);
+      navigate("/");  // Assume '/dashboard' is the route for logged-in users
+    }
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    // Basic validation checks
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.password) newErrors.password = "Password is required";
 
-    if (!isLogin) {
-      // Additional checks for registration
-      if (!formData.fullname) newErrors.fullname = "Full name is required";
-      if (!formData.username) newErrors.username = "Username is required";
-      if (!formData.service_title)
-        newErrors.service_title = "Service title is required";
-      if (!formData.service_category)
-        newErrors.service_category = "Service category is required";
-      if (!formData.pricing) newErrors.pricing = "Pricing is required";
-      if (!formData.location) newErrors.location = "Location is required";
-    //   if (!formData.hoursAvailable)
-    //     newErrors.hoursAvailable = "Hours available are required"; 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const endpoint = isRegistering ? "businessregister" : "businesslogin";
+    const payload = {
+      ...formData,
+    };
+
+    try {
+      const response = await axios.post(
+        `http://localhost:5555/${endpoint}`,
+        payload
+      );
+      if (response.data.business_id) {
+        // User is logged in
+        sessionStorage.setItem("business_id", response.data.business_id);
+        setIsLoggedIn(true);
+      } else if (response.data.message && isRegistering) {
+        // Registration successful, prompt login
+        alert("Registration successful, please log in."); // Optional: Use a more sophisticated notification system
+        setIsRegistering(false); // Switch to login mode
+        setError(""); // Clear any previous errors
+        setFormData({ ...formData, password: "" }); // Clear password (and any other sensitive data)
+      } else if (response.data.error) {
+        // Handle errors
+        setError(response.data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred. Please try again.");
     }
-
-    return newErrors;
   };
-const handleSubmit = (e) => {
-  e.preventDefault();
-  const newErrors = validateForm();
-  setErrors(newErrors);
-  if (Object.keys(newErrors).length === 0) {
-    const endpoint = isLogin ? "businesslogin" : "businessregister";
-    const payload = isLogin
-      ? { email: formData.email, password: formData.password }
-      : { ...formData, pricing: parseInt(formData.pricing) };
 
-    fetch(`http://localhost:5555/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Failed to process the request");
-      })
-      .then((data) => {
-        setSuccessMessage(
-          `Successfully ${
-            isLogin ? "logged in" : "registered"
-          }. Welcome to Hutle.`
-        );
-        // Clear form fields
-        setFormData({
-          fullname: "",
-          username: "",
-          email: "",
-          password: "",
-          service_title: "",
-          service_category: "",
-          pricing: "",
-          location: "",
-        });
-        navigate("/dashboard"); // Adjust the path as needed
-      })
-      .catch((error) => {
-        console.error(
-          `Error during ${isLogin ? "login" : "registration"}: `,
-          error
-        );
-        setErrors({ form: error.message });
-      });
-  }
-};
+  const handleLogout = async () => {
+    try {
+      await axios.get("http://localhost:5555/businesslogout");
+      sessionStorage.removeItem("business_id");
+      setIsLoggedIn(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
+  const switchMode = () => {
+    setIsRegistering(!isRegistering);
+    setError("");
+  };
 
   return (
     <div className="business-access-container">
-      <h2>{isLogin ? "Login" : "Registration"}</h2>
-      <form onSubmit={handleSubmit}>
-        {successMessage && (
-          <div className="success-message">{successMessage}</div>
-        )}
-        {!isLogin && (
-          <>
-            <input
-              type="text"
-              name="fullname"
-              placeholder="Full Name"
-              value={formData.fullname}
-              onChange={handleInputChange}
-            />
-            {errors.fullname && (
-              <div className="error-message">{errors.fullname}</div>
-            )}
-
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleInputChange}
-            />
-            {errors.username && (
-              <div className="error-message">{errors.username}</div>
-            )}
-
-            <input
-              type="text"
-              name="service_title"
-              placeholder="Service Title"
-              value={formData.service_title}
-              onChange={handleInputChange}
-            />
-            {errors.service_title && (
-              <div className="error-message">{errors.service_title}</div>
-            )}
-
-            <input
-              type="text"
-              name="service_category"
-              placeholder="Service Category"
-              value={formData.service_category}
-              onChange={handleInputChange}
-            />
-            {errors.service_category && (
-              <div className="error-message">{errors.service_category}</div>
-            )}
-
-            <input
-              type="number"
-              name="pricing"
-              placeholder="Pricing"
-              value={formData.pricing}
-              onChange={handleInputChange}
-            />
-            {errors.pricing && (
-              <div className="error-message">{errors.pricing}</div>
-            )}
-
-            <input
-              type="text"
-              name="location"
-              placeholder="Location"
-              value={formData.location}
-              onChange={handleInputChange}
-            />
-            {errors.location && (
-              <div className="error-message">{errors.location}</div>
-            )}
-            {/* <input
-              type="text"
-              name="hoursAvailable"
-              placeholder= "Hours Available (e.g., '9 AM to 5 PM')"
-              value={formData.hoursAvailable}
-              onChange={handleInputChange}
-            />
-            {errors.hoursAvailable && (
-              <div className="error-message">{errors.hoursAvailable}</div>
-            )} */}
+      {isLoggedIn ? (
+        <div>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      ) : (
+        <div>
+          <h2>{isRegistering ? "Registration" : "Login"} </h2>
+          {error && <div className="error-message">{error}</div>}
+          <form onSubmit={handleSubmit}>
+            {isRegistering && (
+              <>
+                <input type="text" name="fullname" className="input-field" placeholder="Full Name" value={formData.fullname} onChange={handleInputChange} 
+                />
+                <input type="text" name="username" className="input-field" placeholder="Username" value={formData.username} onChange={handleInputChange} 
+                />
+                <input type="text" name="service_title" className="input-field" placeholder="Service Title" value={formData.service_title} onChange={handleInputChange} 
+                />
+                <input type="text" name="service_category" className="input-field" placeholder="Service Category" value={formData.service_category} onChange={handleInputChange} 
+                />
+                <input type="number" name="pricing" className="input-field" placeholder="Pricing" value={formData.pricing} onChange={handleInputChange} 
+                />
+                <input type="text" name="location" className="input-field" placeholder="Location" value={formData.location} onChange={handleInputChange} 
+                />
+                <input type="text" name="hours_available" className="input-field" placeholder="Hours Available (e.g., '8 AM to 5 PM')" value={formData.hours_available} onChange={handleInputChange} 
+                />
+               
           </>
         )}
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleInputChange}
-        />
-        {errors.email && <div className="error-message">{errors.email}</div>}
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleInputChange}
-        />
-        {errors.password && (
-          <div className="error-message">{errors.password}</div>
-        )}
-
-        <button type="submit">{isLogin ? "Login" : "Register"}</button>
-        <button type="button" onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? "Need to register?" : "Already registered? Login here"}
-        </button>
-      </form>
+        {/* Inputs for both registration and login */}
+            <input type="email" name="email" className="input-field" placeholder="Email" value={formData.email} onChange={handleInputChange} />
+            <input type="password" name="password" className="input-field" placeholder="Password" value={formData.password} onChange={handleInputChange} />
+            <button type="submit">{isRegistering ? "Register" : "Login"}</button>
+          </form>
+          <button onClick={switchMode}>
+            {isRegistering ? "Switch to Login" : "Switch to Registration"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
 export default BusinessLogin;
+
+
