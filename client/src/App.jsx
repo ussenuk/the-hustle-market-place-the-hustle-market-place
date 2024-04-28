@@ -5,8 +5,9 @@ import HomePage from "./components/HomePage/HomePage";
 import AboutUs from "./components/AboutUs/AboutUs";
 import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
-import Navigation from './components/NavBar/Navbar';
-import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
+import AddServiceForm from "./components/AddServiceForm/AddServiceForm";
+import ServicesPage from "./components/ServicesPage/ServicesPage";
+import Navigation from "./components/NavBar/Navbar";
 
 const App = () => {
   return (
@@ -33,14 +34,16 @@ const AppContent = () => {
         </>
       )}
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/userlogin" element={<UserLogin />} />
-        <Route path="/businesslogin" element={<BusinessLogin />} />
-        <Route path="/dashboard" element={<DashBoard />} />
-      </Routes>
-    </div>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/userlogin" element={<UserLogin />} />
+          <Route path="/businesslogin" element={<BusinessLogin />} />
+          <Route path="/servicespage" element={<ServicesPage />} />
+          <Route path="/addserviceform" element={<AddServiceForm />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 

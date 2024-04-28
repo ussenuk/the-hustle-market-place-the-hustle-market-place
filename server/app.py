@@ -227,6 +227,44 @@ api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
 
+@app.route('/services', methods=['POST'])
+def add_service():
+    try:
+        data = request.json
+        new_service = Service(
+            service_title=data['service_title'],
+            service_category=data['service_category'],
+            service_provider_id=1  # Assuming service provider ID, adjust as needed
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        return jsonify({"message": "Service added successfully"}), 201
+    except Exception as e:
+        error_message = f"Failed to add service: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+from flask import jsonify
+
+@app.route('/services', methods=['GET'])
+def get_services():
+    try:
+        services = Service.query.all()
+        serialized_services = []
+        for service in services:
+            serialized_service = {
+                'id': service.id,
+                'service_title': service.service_title,
+                'service_category': service.service_category,
+                'service_provider_id': service.service_provider_id
+                # Add more fields if needed
+            }
+            serialized_services.append(serialized_service)
+        return jsonify(serialized_services), 200
+    except Exception as e:
+        error_message = f"Failed to fetch services: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
