@@ -6,12 +6,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./businesslogin.css";
+import userImage from "../DashBoard/ServiceProviderDashboard/pages/teacher.png"
 
-const BusinessLogin = () => {
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(true);
+const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
   
+  
+  const [isRegistering, setIsRegistering] = useState(true);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullname: "",
     username: "",
@@ -26,13 +27,7 @@ const BusinessLogin = () => {
   });
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const businessId = sessionStorage.getItem("business_id");
-    if (businessId) {
-      setIsLoggedIn(true);
-      navigate("/");  // Assume '/dashboard' is the route for logged-in users
-    }
-  }, [navigate]);
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -84,6 +79,29 @@ const BusinessLogin = () => {
     }
   };
 
+  const handleDashboardAccess = () => {
+    navigate("/dashboard"); // Navigate to the "/dashboard" route
+  };
+
+
+  const [serviceProviderInfo, setServiceProviderInfo] = useState({});
+  useEffect(() => {
+    // Retrieve value from Session storage
+    const serviceProviderId = sessionStorage.getItem('business_id');
+
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/service_provider")
+      .then(response => response.json())
+      .then(data => {
+        // Find service provider with matching ID
+        const serviceProvider = data.find(provider => provider.id === parseInt(serviceProviderId));
+        if (serviceProvider) {
+          setServiceProviderInfo(serviceProvider);
+        }
+      })
+      .catch(error => console.error('Error fetching service providers:', error));
+  }, []);
+
   const switchMode = () => {
     setIsRegistering(!isRegistering);
     setError("");
@@ -93,6 +111,12 @@ const BusinessLogin = () => {
     <div className="business-access-container">
       {isLoggedIn ? (
         <div>
+        <div className="user-card">
+        {/* Add the user image and name here */}
+        <img src={userImage || '/src/components/DashBoard/ServiceProviderDashboard/pages/default-image.png'} alt="User" />
+        <span>Welcome <span className="green-text">{serviceProviderInfo.service_provider}</span></span>
+      </div>
+          <button onClick={handleDashboardAccess}> Dashboard Access</button>
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (

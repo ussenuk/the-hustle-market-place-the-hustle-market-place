@@ -222,10 +222,35 @@ class Services(Resource):
             })
 
         return make_response(jsonify(serialized_services), 200)
+    
+class ServiceProviders(Resource):
+    def get(self):
+        service_providers = ServiceProvider.query.all()
+        serialized_service_provider = []
+
+        for service_provider in service_providers:
+
+            # Fetch service provider name
+            service_provider_id = ServiceProvider.query.filter_by(id=service_provider.id).first().id
+            service_provider_name = ServiceProvider.query.filter_by(id=service_provider.id).first().fullname
+            service_provider_service_title = ServiceProvider.query.filter_by(id=service_provider.id).first().service_title
+
+            serialized_service_provider.append({
+                "id": service_provider_id,
+                "service_provider": service_provider_name,
+                "service_title": service_provider_service_title
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_service_provider), 200)
+   
+
 
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
+
+api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
 
 
 if __name__ == '__main__':
