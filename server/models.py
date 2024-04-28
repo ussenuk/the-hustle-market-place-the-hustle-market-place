@@ -1,5 +1,3 @@
-
-
 # server/models.py
 
 from flask_sqlalchemy import SQLAlchemy
@@ -37,7 +35,7 @@ class Customer(db.Model, SerializerMixin, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
-    # def __repr__(self):
+    # def _repr_(self):
     #     return f'<Customer {self.username}>'
 
 class ServiceProvider(db.Model, SerializerMixin, UserMixin):
@@ -113,4 +111,3 @@ class Payment(db.Model, SerializerMixin):
 
     # booking = db.relationship('Booking', backref=db.backref('payments', lazy=True))
     # customer = db.relationship('User', backref=db.backref('payments', lazy=True))
-

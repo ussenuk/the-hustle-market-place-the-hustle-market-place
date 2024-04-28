@@ -36,18 +36,18 @@ class Home(Resource):
                 "message": "Welcome to the Home Page",
                 "status": "logged_in",
                 "user_id": session['user_id']
-            }), 200
+            })
         elif 'business_id' in session:
             return jsonify({
                 "message": "Welcome to the Home Page",
                 "status": "logged_in",
                 "business_id": session['business_id']
-            }), 200
+            })
         else:
             return jsonify({
                 "message": "Welcome to the Home Page",
                 "status": "logged_out"
-            }), 200
+            })
 
 api.add_resource(Home, '/')
 
@@ -168,6 +168,64 @@ def logout_business_route():
     if 'business_id' in session:
         session.pop('business_id')
     return jsonify({'message': 'Logout successful'}), 200
+
+class Bookings(Resource):
+    def get(self):
+        booking_records = Booking.query.all()
+
+        booking_data = []
+
+        for record in booking_records:
+            # Fetching customer name
+            customer_name = Customer.query.filter_by(id=record.customer_id).first().fullname
+            # Fetching service provider name
+            service_provider_name = ServiceProvider.query.filter_by(id=record.service_provider_id).first().fullname
+            # Fetching payment status
+            payment_status = Payment.query.filter_by(booking_id=record.id).first().payment_status if record.payments else None
+
+            # Fetching service information
+            service_info = Service.query.filter_by(service_provider_id=record.service_provider_id).first()
+            service_title = service_info.service_title if service_info else None
+            service_category = service_info.service_category if service_info else None
+
+            booking_data.append(
+                {
+                    "booking_id": record.id,
+                    "customer": customer_name,
+                    "service_provider": service_provider_name,
+                    "service_title": service_title,
+                    "service_category": service_category,
+                    "service_provider": service_provider_name,
+                    "time_service_provider_booked": record.time_service_provider_booked,
+                    "payment_status": payment_status
+                }
+            )
+        return make_response(jsonify(booking_data), 200)
+    
+# Service API
+class Services(Resource):
+    def get(self):
+        services = Service.query.all()
+
+        serialized_services = []
+
+        for service in services:
+            # Fetch service provider name
+            service_provider_name = ServiceProvider.query.filter_by(id=service.service_provider_id).first().fullname
+
+            serialized_services.append({
+                "service_id": service.id,
+                "service_title": service.service_title,
+                "service_category": service.service_category,
+                "service_provider": service_provider_name,
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_services), 200)
+
+api.add_resource(Services, "/services", endpoint="services")
+
+api.add_resource(Bookings, "/booking", endpoint="booking")
 
 
 if __name__ == '__main__':
