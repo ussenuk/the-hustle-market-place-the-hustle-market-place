@@ -1,16 +1,36 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import ProfileHeader from './ProfileHeader'
 import './profile.css';
 import userImage from './teacher.png';
 
-function Profile() {
+function Profile({user}) {
+
+  const [serviceProviderInfo, setServiceProviderInfo] = useState({});
+  useEffect(() => {
+    // Retrieve value from Session storage
+    const serviceProviderId = sessionStorage.getItem('business_id');
+
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/service_provider")
+      .then(response => response.json())
+      .then(data => {
+        // Find service provider with matching ID
+        const serviceProvider = data.find(provider => provider.id === parseInt(serviceProviderId));
+        if (serviceProvider) {
+          setServiceProviderInfo(serviceProvider);
+        }
+      })
+      .catch(error => console.error('Error fetching service providers:', error));
+  }, []);
+
   return (
     <div className='profile'>
     <ProfileHeader/>
     <div className='user--profile'>
         <div className='user--detail'>
           <img src={userImage} alt="" />
-          <h3 className='username'> <strong>Username</strong> : fullname</h3>
+          <h3 className='username'>  {serviceProviderInfo.service_provider}</h3>
+          <p><strong>Service Title:</strong> {serviceProviderInfo.service_title}</p>
           <span className='profession'><strong>Bio</strong> : bio</span>
         </div>
         </div>

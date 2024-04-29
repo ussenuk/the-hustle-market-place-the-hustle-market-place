@@ -3,10 +3,11 @@ import './DashBoard.css';
 import {BsCart3,BsPeopleFill, BsGrid1X2Fill} from 'react-icons/bs';
 import { MdHomeRepairService,MdComment,MdHelpCenter, MdLogout } from "react-icons/md";
 import { GiMechanicGarage } from "react-icons/gi";
+import { FaPlusCircle } from "react-icons/fa";
 import { Link,  useNavigate } from 'react-router-dom';
 
 
-function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick}) {
+function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout}) {
   const navigate = useNavigate();
 
   const handleSidebarClick = (path) => {
@@ -28,6 +29,11 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick}) {
               <BsGrid1X2Fill className='icon'/> Dashboard
             
           </li>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('')}>
+            
+            <FaPlusCircle className='icon'/> Add service
+          
+        </li>
           <li className='sidebar-list-item' onClick={() => handleMenuItemClick('service')}>
             
               <MdHomeRepairService className='icon'/> Service
@@ -48,9 +54,9 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick}) {
               <MdHelpCenter className='icon'/> Help
             
           </li>
-          <li className='sidebar-list-item'>
+          <li className='sidebar-list-item' onClick={onLogout}>
 
-              <MdLogout className='icon'/> Logout
+              <MdLogout className='icon' /> Logout
           </li>
         
         
