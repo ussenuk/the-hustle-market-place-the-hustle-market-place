@@ -33,14 +33,19 @@ const AppContent = () => {
   const isDashboardRoute = location.pathname === '/dashboard';
 
   useEffect(() => {
+
     const businessId = sessionStorage.getItem("business_id");
+    const adminId = sessionStorage.getItem("admin_id");
+    if (adminId) {
+          setIsLoggedIn(true);
+        }
     if (businessId) {
       setIsLoggedIn(true);
       console.log(isLoggedIn)
       // navigate("/dashboard");  // Assume '/dashboard' is the route for logged-in users
     }
   }, []);
-
+ 
 
 
   function handleLogin(isLoggedIn){
@@ -49,6 +54,7 @@ const AppContent = () => {
 
   const handleLogout = () => {
     sessionStorage.removeItem("business_id");
+    sessionStorage.removeItem("admin_id");
     setIsLoggedIn(false);
     navigate("/"); // Navigate to the home page after logging out
   };
@@ -66,7 +72,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/admin" element={<AdminAccess />} />
+        <Route path="/admin" element={<AdminAccess isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/userlogin" element={<UserLogin />} />
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />

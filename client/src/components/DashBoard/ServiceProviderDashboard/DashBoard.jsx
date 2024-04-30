@@ -45,7 +45,7 @@ function DashBoard({onLogout, onLogin, user}) {
     );
 
   } else {
-    return <h1>Service Provider not logged in. Please log in to view the Dashboard...</h1>;
+    return <h1>Service Provider or Admin not logged in. Please log in to view the Dashboard...</h1>;
   }
 
  

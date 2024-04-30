@@ -333,13 +333,32 @@ class ServiceProviders(Resource):
 
         return make_response(jsonify(serialized_service_provider), 200)
    
+class Admins(Resource):
+    def get(self):
+        admins = Admin.query.all()
+        serialized_admin = []
 
+        for admin in admins:
+
+            # Fetch admin name
+            admin_id = Admin.query.filter_by(id=admin.id).first().id
+            admin_name = Admin.query.filter_by(id=admin.id).first().fullname
+            
+            serialized_admin.append({
+                "id": admin_id,
+                "admin": admin_name
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_admin), 200)
 
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
 
 api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
+
+api.add_resource(Admins, "/admin", endpoint="admin")
 
 
 if __name__ == '__main__':

@@ -23,10 +23,41 @@ function Profile({user}) {
       .catch(error => console.error('Error fetching service providers:', error));
   }, []);
 
+  const [adminInfo, setAdminInfo] = useState({});
+  const Adminchecker = sessionStorage.getItem('admin_id');
+  useEffect(() => {
+    // Retrieve value from Session storage
+    const AdminId = sessionStorage.getItem('admin_id');
+
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/admin")
+      .then(response => response.json())
+      .then(data => {
+        // Find service provider with matching ID
+        const Admin = data.find(admin => admin.id === parseInt(AdminId));
+        if (Admin) {
+          setAdminInfo(Admin);
+        }
+      })
+      .catch(error => console.error('Error fetching service providers:', error));
+  }, []);
+
   return (
     <div className='profile'>
-    <ProfileHeader/>
-    <div className='user--profile'>
+    { Adminchecker ? (
+      <>
+      <ProfileHeader/>
+        <div className='user--profile'>
+        <div className='user--detail'>
+          <img src={userImage} alt="" />
+          <h3 className='username'>  {adminInfo.admin}</h3>
+          <p><strong>Role:</strong> Admin</p>
+        </div>
+        </div>
+      </>
+    ):(<>
+      <ProfileHeader/>
+        <div className='user--profile'>
         <div className='user--detail'>
           <img src={userImage} alt="" />
           <h3 className='username'>  {serviceProviderInfo.service_provider}</h3>
@@ -34,6 +65,10 @@ function Profile({user}) {
           <span className='profession'><strong>Bio</strong> : bio</span>
         </div>
         </div>
+      </>) 
+    
+    }
+    
     
     </div>
   )
