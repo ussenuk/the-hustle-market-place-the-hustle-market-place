@@ -18,6 +18,7 @@ const Navigation = () => {
       {/* <Link to="/feedback">Feedback</Link> */}
       <Link to="/businesslogin">Business Login/Register</Link>
       <Link to="/userlogin">Login/Logout</Link>
+      <Link to="/paypalButton">Make Payment</Link>
     </div>
   );
 };

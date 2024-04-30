@@ -7,7 +7,7 @@ import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import Navigation from './components/NavBar/Navbar';
 import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
-
+import PayPalButton from "./components/Paypal/paypalButton";
 const App = () => {
   return (
     <Router>
@@ -63,6 +63,7 @@ const AppContent = () => {
         <Route path="/userlogin" element={<UserLogin />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
+        <Route path="/paypalButton" element={<PayPalButton isLoggedIn={isLoggedIn} />} /> {/* Define PayPalButton route */}
       </Routes>
     </div>
   );
