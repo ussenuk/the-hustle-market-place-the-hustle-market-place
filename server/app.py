@@ -430,8 +430,24 @@ def login_business_route():
         return jsonify({'message': 'Logged in successfully', 'business_id': service_provider.id}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
+@app.route('/addservices', methods=['POST'])
+def add_service():
+    try:
+        data = request.json
+        new_service = Service(
+            service_title=data['service_title'],
+            service_category=data['service_category'],
+            service_provider_id=1  # Assuming service provider ID, adjust as needed
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        return jsonify({"message": "Service added successfully"}), 201
+    except Exception as e:
+        error_message = f"Failed to add service: {str(e)}"
+        return jsonify({'error': error_message}), 500
 
-# Service Provider Logout
+from flask import jsonify
+
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
     

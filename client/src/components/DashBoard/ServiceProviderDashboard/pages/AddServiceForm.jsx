@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 const AddServiceForm = () => {
-  const navigate = useNavigate();
+//   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     service_title: "",
     service_category: "",
@@ -17,7 +17,7 @@ const AddServiceForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5555/services", {
+      const response = await fetch("http://localhost:5555/addservices", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -25,7 +25,7 @@ const AddServiceForm = () => {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
-        navigate("/services");
+        // navigate("/servicespage");
       } else {
         throw new Error("Failed to add service");
       }
@@ -36,7 +36,7 @@ const AddServiceForm = () => {
   };
 
   return (
-    <div className="add-service-form-container">
+    <div className="main-container">
       <h2>Add Service</h2>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
