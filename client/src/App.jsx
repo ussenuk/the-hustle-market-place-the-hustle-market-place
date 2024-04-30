@@ -6,6 +6,7 @@ import AboutUs from "./components/AboutUs/AboutUs";
 import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import Navigation from './components/NavBar/Navbar';
+import ServicesPage from "./components/ServicesPage/ServicesPage"
 import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
 
 const App = () => {
@@ -61,6 +62,7 @@ const AppContent = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/userlogin" element={<UserLogin />} />
+        <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
       </Routes>
@@ -70,4 +72,3 @@ const AppContent = () => {
 
 
 export default App;
-
