@@ -434,10 +434,24 @@ def login_business_route():
 def add_service():
     try:
         data = request.json
+        service_title = data.get('service_title')
+        service_category = data.get('service_category')
+        
+        # Retrieve service provider ID from request headers
+        service_provider_id = request.headers.get('ServiceProviderId')
+        
+        # If service provider ID is not found in headers, check session
+        if not service_provider_id:
+            service_provider_id = session.get('business_id')
+        
+        # If service provider ID is still not found, return an error
+        if not service_provider_id:
+            return jsonify({'error': 'Service provider ID not provided'}), 400
+
         new_service = Service(
-            service_title=data['service_title'],
-            service_category=data['service_category'],
-            service_provider_id=1  # Assuming service provider ID, adjust as needed
+            service_title=service_title,
+            service_category=service_category,
+            service_provider_id=service_provider_id
         )
         db.session.add(new_service)
         db.session.commit()
@@ -445,8 +459,6 @@ def add_service():
     except Exception as e:
         error_message = f"Failed to add service: {str(e)}"
         return jsonify({'error': error_message}), 500
-
-from flask import jsonify
 
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
