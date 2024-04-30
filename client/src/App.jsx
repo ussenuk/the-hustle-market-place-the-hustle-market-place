@@ -9,6 +9,7 @@ import HomePage from "./components/HomePage/HomePage";
 import AboutUs from "./components/AboutUs/AboutUs";
 import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
+import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
 import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
 import AdminAccess from "./components/Admin/Admin";
@@ -67,6 +68,7 @@ const AppContent = () => {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/admin" element={<AdminAccess />} />
         <Route path="/userlogin" element={<UserLogin />} />
+        <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
       </Routes>
@@ -76,4 +78,3 @@ const AppContent = () => {
 
 
 export default App;
-
