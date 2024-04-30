@@ -3,12 +3,22 @@
 # server/app.py
 
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
-from config import app, db, CORS, api
+from config import app, db, CORS, api, mail
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
+#Sending an email using Flask-Mail
+
+@app.route('/send-email')
+def send_email():
+    message = Message('Test 2 Email', sender='hutlemarket@fastmail.com', recipients = ['ukimanuka@gmail.com'])
+    message.body = 'This is a test email sent from Flask!'
+    mail.send(message)
+    return 'Email sent!'
+
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
