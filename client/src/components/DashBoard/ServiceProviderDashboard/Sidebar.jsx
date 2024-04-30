@@ -29,7 +29,7 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout}
               <BsGrid1X2Fill className='icon'/> Dashboard
             
           </li>
-          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('')}>
+          <li className='sidebar-list-item' onClick={() => handleMenuItemClick('addserviceform')}>
             
             <FaPlusCircle className='icon'/> Add service
           
