@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import React,{useState, useEffect} from "react";
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header/Header";
 import HomePage from "./components/HomePage/HomePage";
 import AboutUs from "./components/AboutUs/AboutUs";
@@ -21,8 +21,32 @@ const AppContent = () => {
   // Get the current location
   const location = useLocation();
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
   // Check if the current location matches the Dashboard route
   const isDashboardRoute = location.pathname === '/dashboard';
+
+  useEffect(() => {
+    const businessId = sessionStorage.getItem("business_id");
+    if (businessId) {
+      setIsLoggedIn(true);
+      console.log(isLoggedIn)
+      // navigate("/dashboard");  // Assume '/dashboard' is the route for logged-in users
+    }
+  }, []);
+
+
+
+  function handleLogin(isLoggedIn){
+    setIsLoggedIn(isLoggedIn);
+  }
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("business_id");
+    setIsLoggedIn(false);
+    navigate("/"); // Navigate to the home page after logging out
+  };
 
   return (
     <div className={isDashboardRoute ? "" : "app-container"}>
@@ -34,16 +58,14 @@ const AppContent = () => {
         </>
       )}
 
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/userlogin" element={<UserLogin />} />
-          <Route path="/businesslogin" element={<BusinessLogin />} />
-          <Route path="/servicespage" element={<ServicesPage />} />
-          <Route path="/addserviceform" element={<AddServiceForm />} />
-        </Routes>
-      </div>
-    </Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/userlogin" element={<UserLogin />} />
+        <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
+        <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
+      </Routes>
+    </div>
   );
 };
 

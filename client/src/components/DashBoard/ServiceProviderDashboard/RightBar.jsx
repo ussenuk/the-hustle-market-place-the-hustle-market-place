@@ -4,10 +4,10 @@ import Profile from './pages/Profile';
 import Updates from './pages/Updates';
 
 
-function RightBar() {
+function RightBar({user}) {
   return (
     <div className='RightSide'>
-    <Profile />
+    <Profile user={user} />
         
     <Updates />
  

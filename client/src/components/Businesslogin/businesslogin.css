@@ -86,3 +86,27 @@ h2 {
     text-align: center;
     color: #4CAF50;
 }
+
+.user-card {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center horizontally */
+    text-align: center; /* Center the text */
+  }
+  
+  .user-card img {
+    width: 100px; /* Adjust the width as needed */
+    height: 100px; /* Adjust the height as needed */
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+  }
+  
+  .user-card span {
+    font-size: 20px; /* Adjust the font size as needed */
+    font-weight: bold;
+  }
+
+  .green-text {
+    color: #4CAF50;
+  }
