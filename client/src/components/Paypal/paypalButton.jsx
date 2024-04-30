@@ -9,7 +9,7 @@ const PayPalButton = ({ isLoggedIn }) => {
 
   return (
     <div>
-      {isLoggedIn && (
+      {isLoggedIn ? (
         <PayPalScriptProvider
           options={{
             'client-id': 'AcWQvHSSlSkxrmKJevzaG8nBgLKh5Z2z2f7wzlTcinCVFlK1N6otxDridE-WZ6pdXBSEMKOoUQqaaLAP',
@@ -36,6 +36,11 @@ const PayPalButton = ({ isLoggedIn }) => {
             }}
           />
         </PayPalScriptProvider>
+      ) : (
+        <div>
+          <p>Please login to view and proceed with the PayPal button.</p>
+          {/* You can add login button here or navigate to the login page */}
+        </div>
       )}
     </div>
   );
