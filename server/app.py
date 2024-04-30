@@ -4,7 +4,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
 from config import app, db, CORS, api
-from models import Customer, ServiceProvider, Payment, Review, Booking, Service
+from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
@@ -50,6 +50,57 @@ class Home(Resource):
             })
 
 api.add_resource(Home, '/')
+
+
+# @app.route('/admindashboard')
+# @login_required
+# def admin_dashboard():
+#     return jsonify({'message': 'Welcome to the Admin Dashboard'}), 200
+
+
+# Admin Registration
+@app.route('/adminregister', methods=['POST'])
+def register_admin():
+    data = request.get_json()
+    fullname = data.get('fullname')
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not fullname or not username or not email or not password:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    if Admin.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already in use'}), 409
+    if Admin.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already in use'}), 409
+
+    new_admin = Admin(fullname=fullname, username=username, email=email)
+    new_admin.set_password(password)
+    db.session.add(new_admin)
+    db.session.commit()
+
+    return jsonify({'message': 'Admin registered successfully'}), 201
+
+# Admin Login
+@app.route('/adminlogin', methods=['POST'])
+def login_admin_route():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    admin = Admin.query.filter_by(email=email).first()
+    if admin and admin.check_password(password):
+        session['admin_id'] = admin.id
+        return jsonify({'message': 'Logged in successfully', 'admin_id': admin.id}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+# Admin Logout
+@app.route('/adminlogout', methods=['GET'])
+def logout_admin_route():
+    if 'admin_id' in session:
+        session.pop('admin_id')
+    return jsonify({'message': 'Logout successful'}), 200
 
 # User Registration
 @app.route('/userregister', methods=['POST'])
@@ -160,8 +211,36 @@ def login_business_route():
         return jsonify({'message': 'Logged in successfully', 'business_id': service_provider.id}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
+@app.route('/addservices', methods=['POST'])
+def add_service():
+    try:
+        data = request.json
+        service_title = data.get('service_title')
+        service_category = data.get('service_category')
+        
+        # Retrieve service provider ID from request headers
+        service_provider_id = request.headers.get('ServiceProviderId')
+        
+        # If service provider ID is not found in headers, check session
+        if not service_provider_id:
+            service_provider_id = session.get('business_id')
+        
+        # If service provider ID is still not found, return an error
+        if not service_provider_id:
+            return jsonify({'error': 'Service provider ID not provided'}), 400
 
-# Service Provider Logout
+        new_service = Service(
+            service_title=service_title,
+            service_category=service_category,
+            service_provider_id=service_provider_id
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        return jsonify({"message": "Service added successfully"}), 201
+    except Exception as e:
+        error_message = f"Failed to add service: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
     
@@ -255,6 +334,5 @@ api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provid
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
-
 
 
