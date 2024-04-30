@@ -4,6 +4,7 @@ import Service from './ServiceProviderDashboard/pages/Service';
 import Users from './ServiceProviderDashboard/pages/Users';
 import Reviews from './ServiceProviderDashboard/pages/Reviews';
 import Help from './ServiceProviderDashboard/pages/Help';
+import AddServiceForm from './ServiceProviderDashboard/pages/AddServiceForm';
 import DashBoardHome from './ServiceProviderDashboard/DashBoardHome';
 
 function DashBoardPage({ selectedMenuItem }) {
@@ -12,6 +13,8 @@ function DashBoardPage({ selectedMenuItem }) {
       return <DashBoardHome />;
     case 'service':
       return <Service />;
+    case 'addserviceform':
+      return <AddServiceForm />;
     case 'users':
       return <Users />;
     case 'reviews':
