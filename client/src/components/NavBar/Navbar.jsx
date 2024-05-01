@@ -17,6 +17,7 @@ const Navigation = () => {
       <Link to="/about">About Us</Link>
       <Link to="/businesslogin">Business Login/Register</Link>
       <Link to="/userlogin">Login/Logout</Link>
+      <Link to="/search_services">Search Services</Link>
     </div>
   );
 };
