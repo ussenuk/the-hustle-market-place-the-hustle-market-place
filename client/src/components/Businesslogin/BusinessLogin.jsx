@@ -35,11 +35,55 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    const {
+      fullname,
+      username,
+      email,
+      password,
+      service_title,
+      service_category,
+      pricing,
+      hours_available,
+      location,
+      business_description,
+    } = formData;
 
+    // Check for empty fields
+    if (
+      !fullname ||
+      !username ||
+      !email ||
+      !password ||
+      !service_title ||
+      !service_category ||
+      !pricing ||
+      !hours_available ||
+      !location || ! business_description 
+    ) {
+      setError("Please fill in all fields.");
+      return false;
+    }
+
+    // Additional validation for business description length when registering
+    if (
+      isRegistering &&
+      (business_description.length < 200 || business_description.length > 1000)
+    ) {
+      setError("Business description must be between 200 and 1000 characters.");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isRegistering ? "businessregister" : "businesslogin";
+    // Validate the form data
+    if (!validateForm()) {
+      return;
+    }
     const payload = {
       ...formData,
     };
@@ -160,8 +204,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
                   placeholder="Business Description (minimum 200 characters)"
                   value={formData.business_description}
                   onChange={handleInputChange}
-                  rows="4"
-                  minLength="20"
+                  rows="12"
+                  minLength="200"
                   maxLength="1000"
                 />
                 <input
