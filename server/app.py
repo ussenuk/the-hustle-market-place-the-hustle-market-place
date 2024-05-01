@@ -152,7 +152,6 @@ def logout_user_route():
 
 
 # Service Provider Registration
-
 @app.route('/businessregister', methods=['POST'])
 def register_business():
     data = request.get_json()
@@ -167,14 +166,15 @@ def register_business():
     pricing = data.get('pricing')
     hours_available = data.get('hours_available')
     location = data.get('location')
+    business_description = data.get('business_description')
     
 
     # Check for missing required fields
-    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location :
+    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location or not business_description:
         missing = ", ".join([field for field, value in [
             ('fullname', fullname), ('username', username), ('email', email), ('password', password),
             ('service_title', service_title), ('service_category', service_category), ('pricing', pricing),
-            ('hours_available', hours_available), ('location', location)
+            ('hours_available', hours_available), ('location', location), ('business_description', business_description)
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
 
@@ -189,7 +189,8 @@ def register_business():
         service_category=service_category,
         pricing=pricing,
         hours_available=hours_available,
-        location=location
+        location=location,
+        business_description=business_description
     )
     service_provider.set_password(password)
     db.session.add(service_provider)

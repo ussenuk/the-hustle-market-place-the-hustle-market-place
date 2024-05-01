@@ -1,3 +1,5 @@
+
+
 # server/models.py
 
 from flask_sqlalchemy import SQLAlchemy
@@ -65,6 +67,7 @@ class ServiceProvider(db.Model, SerializerMixin, UserMixin):
     pricing = db.Column(db.Integer)
     hours_available = db.Column(db.String(255))
     location = db.Column(db.String(255))
+    business_description = db.Column(db.Text)
     # profile_picture = db.Column(db.String(255), nullable=False)
     # video_demo_of_service_offered = db.Column(db.String(255), nullable=True)
     # documents = db.Column(db.String(255), nullable=False)

@@ -1,3 +1,7 @@
+
+
+// client/src/components/Businesslogin/BusinessLogin.jsx
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -19,7 +23,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     pricing: "",
     hours_available: "",
     location: "",
-    
+    business_description: "",
+
   });
   const [error, setError] = useState("");
 
@@ -107,11 +112,22 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     <div className="business-access-container">
       {isLoggedIn ? (
         <div>
-        <div className="user-card">
-        {/* Add the user image and name here */}
-        <img src={userImage || '/src/components/DashBoard/ServiceProviderDashboard/pages/default-image.png'} alt="User" />
-        <span>Welcome <span className="green-text">{serviceProviderInfo.service_provider}</span></span>
-      </div>
+          <div className="user-card">
+            {/* Add the user image and name here */}
+            <img
+              src={
+                userImage ||
+                "/src/components/DashBoard/ServiceProviderDashboard/pages/default-image.png"
+              }
+              alt="User"
+            />
+            <span>
+              Welcome{" "}
+              <span className="green-text">
+                {serviceProviderInfo.service_provider}
+              </span>
+            </span>
+          </div>
           <button onClick={handleDashboardAccess}> Dashboard Access</button>
           <button onClick={handleLogout}>Logout</button>
         </div>
@@ -122,27 +138,109 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           <form onSubmit={handleSubmit}>
             {isRegistering && (
               <>
-                <input type="text" name="fullname" className="input-field" placeholder="Full Name" value={formData.fullname} onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="fullname"
+                  className="input-field"
+                  placeholder="Full Name"
+                  value={formData.fullname}
+                  onChange={handleInputChange}
                 />
-                <input type="text" name="username" className="input-field" placeholder="Username" value={formData.username} onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="username"
+                  className="input-field"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleInputChange}
                 />
-                <input type="text" name="service_title" className="input-field" placeholder="Service Title" value={formData.service_title} onChange={handleInputChange} 
+                <textarea
+                  name="business_description"
+                  className="input-field"
+                  placeholder="Business Description (minimum 200 characters)"
+                  value={formData.business_description}
+                  onChange={handleInputChange}
+                  rows="4"
+                  minLength="20"
+                  maxLength="1000"
                 />
-                <input type="text" name="service_category" className="input-field" placeholder="Service Category" value={formData.service_category} onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="service_title"
+                  className="input-field"
+                  placeholder="Service Title"
+                  value={formData.service_title}
+                  onChange={handleInputChange}
                 />
-                <input type="number" name="pricing" className="input-field" placeholder="Pricing" value={formData.pricing} onChange={handleInputChange} 
+                <select
+                  name="service_category"
+                  className="input-field"
+                  value={formData.service_category}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Service Category</option>
+                  <option value="Painter">Painter</option>
+                  <option value="Teacher">Teacher</option>
+                  <option value="Masonry">Masonry</option>
+                  <option value="Fitness Professional">
+                    Fitness Professional
+                  </option>
+                  <option value="Nutritionist">Nutritionist</option>
+                  <option value="Land scaping">Land scaping</option>
+                  <option value="Interior decorator">Interior decorator</option>
+                  <option value="Makeup artist">Makeup artist</option>
+                  <option value="Plumber">Plumber</option>
+                  <option value="Engineer">Engineer</option>
+                  <option value="Electrician">Electrician</option>
+                  <option value="Body guard">Body guard</option>
+                  {/* Add more options as needed */}
+                </select>
+                <input
+                  type="number"
+                  name="pricing"
+                  className="input-field"
+                  placeholder="Pricing"
+                  value={formData.pricing}
+                  onChange={handleInputChange}
                 />
-                <input type="text" name="location" className="input-field" placeholder="Location" value={formData.location} onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="location"
+                  className="input-field"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={handleInputChange}
                 />
-                <input type="text" name="hours_available" className="input-field" placeholder="Hours Available (e.g., '8 AM to 5 PM')" value={formData.hours_available} onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="hours_available"
+                  className="input-field"
+                  placeholder="Hours Available (e.g., '8 AM to 5 PM')"
+                  value={formData.hours_available}
+                  onChange={handleInputChange}
                 />
-               
-          </>
-        )}
-        {/* Inputs for both registration and login */}
-            <input type="email" name="email" className="input-field" placeholder="Email" value={formData.email} onChange={handleInputChange} />
-            <input type="password" name="password" className="input-field" placeholder="Password" value={formData.password} onChange={handleInputChange} />
-            <button type="submit">{isRegistering ? "Register" : "Login"}</button>
+              </>
+            )}
+            {/* Inputs for both registration and login */}
+            <input
+              type="email"
+              name="email"
+              className="input-field"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+            <input
+              type="password"
+              name="password"
+              className="input-field"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
+            <button type="submit">
+              {isRegistering ? "Register" : "Login"}
+            </button>
           </form>
           <button onClick={switchMode}>
             {isRegistering ? "Switch to Login" : "Switch to Registration"}
