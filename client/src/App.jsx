@@ -8,9 +8,11 @@ import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
 import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
-import SearchFilter from "./components/SearchFilter/SearchFilter";
+import Search from "./components/Search/Search";
+//import SearchFilter from "./components/SearchFilter/SearchFilter";
 
 const App = () => {
+
   return (
     <Router>
       <AppContent />
@@ -38,10 +40,10 @@ const AppContent = () => {
   }, []);
 
 
-  const handleSearch = (searchTerm) => {
+  /* const handleSearch = (searchTerm) => {
     navigate(`/servicespage?search=${searchTerm}`);
     console.log('Search parameters:', searchTerm)
-  }
+  } */
 
 
 
@@ -72,7 +74,9 @@ const AppContent = () => {
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
-        <Route path="/search_services" element={<SearchFilter onSearch={handleSearch} />} />
+        <Route path="/search" element={<Search />} />
+
+      
       </Routes>
     </div>
   );

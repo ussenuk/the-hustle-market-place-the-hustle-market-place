@@ -368,7 +368,45 @@ def logout_user_route():
     
     return jsonify({'message': 'You have been logged out'}), 200
 
-@app.route('/search_services', methods=['POST'])
+
+
+
+
+@app.route('/search_services', methods=['GET'])
+def search_services():
+    # Extract search parameters from the request
+    data = request.json
+    search_query = data.get('searchQuery')
+    service_category = data.get('serviceCategory')
+
+    # Query services based on the search parameters
+    if not search_query:
+        return jsonify({'error': 'Missing search query'}), 400
+
+    filtered_services = Service.query.filter(Service.service_title.ilike(f'%{search_query}%'))
+
+    # Filter by service category
+    if service_category:
+        filtered_services = filtered_services.filter(Service.service_category == service_category)
+
+    # Check if any services match the search criteria
+    if filtered_services.count() == 0:
+        return jsonify({'error': 'No matching services found'}), 404
+
+    serialized_services = [
+        {
+            'service_id': service.id,
+            'service_title': service.service_title,
+            'service_price': service.service_price,
+            'service_category': service.service_category
+        }
+        for service in filtered_services
+    ]
+
+    return jsonify(serialized_services), 200
+
+
+""" @app.route('/search_services', methods=['POST'])
 def search_services():
     # Extract search parameters from the request
     data = request.json
@@ -409,7 +447,7 @@ def search_services():
         for service in filtered_services
     ]
 
-    return jsonify(serialized_services), 200
+    return jsonify(serialized_services), 200 """
 
 
 
@@ -587,6 +625,24 @@ class ServiceProviders(Resource):
             })
 
         return make_response(jsonify(serialized_service_provider), 200)
+    
+@app.route('/search/providers', methods=['GET'])
+def search_providers():
+    # Get search parameters from the request
+    availability_hours = request.args.get('availabilityHours')
+    user_rating = request.args.get('userRating')
+
+    # Query service providers based on search parameters
+    filtered_providers = ServiceProvider.query.all()
+    if availability_hours:
+        filtered_providers = [provider for provider in filtered_providers if provider.availability_hours == availability_hours]
+        
+    if user_rating:
+        filtered_providers = [provider for provider in filtered_providers if provider.user_rating == user_rating]
+
+    # Serialize the service providers and return as JSON response
+    serialized_providers = [{"id": provider.id, "full_name": provider.full_name} for provider in filtered_providers]
+    return jsonify(serialized_providers)
    
 
 
