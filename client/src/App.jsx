@@ -11,10 +11,13 @@ import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
-import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
+import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoa
+import Search from "./components/Search/Search";
 import AdminAccess from "./components/Admin/Admin";
 
+
 const App = () => {
+
   return (
     <Router>
       <AppContent />
@@ -40,6 +43,12 @@ const AppContent = () => {
       // navigate("/dashboard");  // Assume '/dashboard' is the route for logged-in users
     }
   }, []);
+
+
+  /* const handleSearch = (searchTerm) => {
+    navigate(`/servicespage?search=${searchTerm}`);
+    console.log('Search parameters:', searchTerm)
+  } */
 
 
 
@@ -71,6 +80,9 @@ const AppContent = () => {
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
+        <Route path="/search" element={<Search />} />
+
+      
       </Routes>
     </div>
   );

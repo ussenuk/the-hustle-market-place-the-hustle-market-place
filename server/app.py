@@ -151,6 +151,88 @@ def logout_user_route():
 
 
 
+
+
+@app.route('/search_services', methods=['GET'])
+def search_services():
+    # Extract search parameters from the request
+    data = request.json
+    search_query = data.get('searchQuery')
+    service_category = data.get('serviceCategory')
+
+    # Query services based on the search parameters
+    if not search_query:
+        return jsonify({'error': 'Missing search query'}), 400
+
+    filtered_services = Service.query.filter(Service.service_title.ilike(f'%{search_query}%'))
+
+    # Filter by service category
+    if service_category:
+        filtered_services = filtered_services.filter(Service.service_category == service_category)
+
+    # Check if any services match the search criteria
+    if filtered_services.count() == 0:
+        return jsonify({'error': 'No matching services found'}), 404
+
+    serialized_services = [
+        {
+            'service_id': service.id,
+            'service_title': service.service_title,
+            'service_price': service.service_price,
+            'service_category': service.service_category
+        }
+        for service in filtered_services
+    ]
+
+    return jsonify(serialized_services), 200
+
+
+""" @app.route('/search_services', methods=['POST'])
+def search_services():
+    # Extract search parameters from the request
+    data = request.json
+    search_query = data.get('searchQuery')
+    min_price = data.get('minPrice')
+    max_price = data.get('maxPrice')
+    availability_hours = data.get('availabilityHours')
+    service_category = data.get('serviceCategory')
+    user_rating = data.get('userRating')
+
+    # Query services based on the search parameters
+    filtered_services = Service.query.filter(Service.service_title.ilike(f'%{search_query}%'))
+
+    # Filter by price range
+    if min_price and max_price:
+        filtered_services = filtered_services.filter(Service.service_price.between(min_price, max_price))
+
+    # Filter by availability hours
+    if availability_hours:
+        filtered_services = filtered_services.filter(Service.availability_hours == availability_hours)
+
+    # Filter by service category
+    if service_category:
+        filtered_services = filtered_services.filter(Service.service_category == service_category)
+
+    # Filter by user rating
+    if user_rating:
+        filtered_services = filtered_services.filter(Service.user_rating == user_rating)
+
+    # Serialize the filtered services
+    serialized_services = [
+        {
+            'service_id': service.id,
+            'service_title': service.service_title,
+            'service_price': service.service_price,
+            # Add other fields as needed
+        }
+        for service in filtered_services
+    ]
+
+    return jsonify(serialized_services), 200 """
+
+
+
+
 # Service Provider Registration
 
 @app.route('/businessregister', methods=['POST'])
@@ -302,6 +384,8 @@ class Services(Resource):
 
         return make_response(jsonify(serialized_services), 200)
     
+    
+    
 class ServiceProviders(Resource):
     def get(self):
         service_providers = ServiceProvider.query.all()
@@ -322,6 +406,24 @@ class ServiceProviders(Resource):
             })
 
         return make_response(jsonify(serialized_service_provider), 200)
+    
+@app.route('/search/providers', methods=['GET'])
+def search_providers():
+    # Get search parameters from the request
+    availability_hours = request.args.get('availabilityHours')
+    user_rating = request.args.get('userRating')
+
+    # Query service providers based on search parameters
+    filtered_providers = ServiceProvider.query.all()
+    if availability_hours:
+        filtered_providers = [provider for provider in filtered_providers if provider.availability_hours == availability_hours]
+        
+    if user_rating:
+        filtered_providers = [provider for provider in filtered_providers if provider.user_rating == user_rating]
+
+    # Serialize the service providers and return as JSON response
+    serialized_providers = [{"id": provider.id, "full_name": provider.full_name} for provider in filtered_providers]
+    return jsonify(serialized_providers)
    
 
 
