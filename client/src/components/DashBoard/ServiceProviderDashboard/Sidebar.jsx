@@ -8,7 +8,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import { Link,  useNavigate } from 'react-router-dom';
 
 
-function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout}) {
+function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout, onLogout2}) {
   const navigate = useNavigate();
 
  
@@ -65,7 +65,7 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout}
               <ImStatsDots className='icon'/> Analytics and Report
             
           </li>
-          <li className='sidebar-list-item' onClick={onLogout}>
+          <li className='sidebar-list-item' onClick={onLogout2}>
 
               <MdLogout className='icon' /> Logout
           </li>

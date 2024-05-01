@@ -9,7 +9,7 @@ import "./adminaccess.css";
 import userImage from "../DashBoard/ServiceProviderDashboard/pages/teacher.png"
 
 
-const AdminAccess = ({ isLoggedIn, setIsLoggedIn}) => {
+const AdminAccess = ({ isLoggedInAdmin, setIsLoggedInAdmin}) => {
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,7 +41,7 @@ const AdminAccess = ({ isLoggedIn, setIsLoggedIn}) => {
       if (response.data.admin_id) {
         // Admin is logged in
         sessionStorage.setItem("admin_id", response.data.admin_id);
-        setIsLoggedIn(true);
+        setIsLoggedInAdmin(true);
       } else if (response.data.message && isRegistering) {
         // Registration successful, prompt login
         alert("Registration successful, please log in.");
@@ -62,7 +62,7 @@ const AdminAccess = ({ isLoggedIn, setIsLoggedIn}) => {
     try {
       await axios.get("http://localhost:5555/adminlogout");
       sessionStorage.removeItem("admin_id");
-      setIsLoggedIn(false);
+      setIsLoggedInAdmin(false);
       navigate("/admin");
     } catch (error) {
       console.error("Logout error:", error);
@@ -98,7 +98,7 @@ const AdminAccess = ({ isLoggedIn, setIsLoggedIn}) => {
 
   return (
     <div className="admin-access-container">
-      {isLoggedIn ? (
+      {isLoggedInAdmin ? (
         <div>
         <div className="user-card">
         {/* Add the user image and name here */}
