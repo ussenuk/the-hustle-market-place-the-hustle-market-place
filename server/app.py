@@ -3,12 +3,22 @@
 # server/app.py
 
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
-from config import app, db, CORS, api
+from config import app, db, CORS, api, mail
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
+#Sending an email using Flask-Mail
+
+@app.route('/send-email')
+def send_email():
+    message = Message('Test 2 Email', sender='hutlemarket@fastmail.com', recipients = ['ukimanuka@gmail.com'])
+    message.body = 'This is a test email sent from Flask!'
+    mail.send(message)
+    return 'Email sent!'
+
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -127,6 +137,8 @@ def register_user():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
+
+# User Login
 @app.route('/userlogin', methods=['POST'])
 def login_user_route():
     data = request.get_json()
@@ -234,33 +246,61 @@ def search_services():
 
 
 # Service Provider Registration
-
 @app.route('/businessregister', methods=['POST'])
 def register_business():
-    data = request.get_json()
+    # data = request.get_json()
 
-    # Extract fields from JSON data
-    fullname = data.get('fullname')
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    service_title = data.get('service_title')
-    service_category = data.get('service_category')
-    pricing = data.get('pricing')
-    hours_available = data.get('hours_available')
-    location = data.get('location')
+    
+    # Extract fields from form data
+    fullname = request.form.get('fullname')
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    service_title = request.form.get('service_title')
+    service_category = request.form.get('service_category')
+    pricing = request.form.get('pricing')
+    hours_available = request.form.get('hours_available')
+    location = request.form.get('location')
+    business_description = request.form.get('business_description')
+    profile_picture = request.files['profile_picture']
+    video = request.files.get('video')
+    work_images = request.files['work_images']
+    registration_document = request.files['registration_document']
+
+
     
 
     # Check for missing required fields
-    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location :
+    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location or not business_description:
         missing = ", ".join([field for field, value in [
             ('fullname', fullname), ('username', username), ('email', email), ('password', password),
             ('service_title', service_title), ('service_category', service_category), ('pricing', pricing),
-            ('hours_available', hours_available), ('location', location)
+            ('hours_available', hours_available), ('location', location), ('business_description', business_description)
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
-
     
+    if not profile_picture or not registration_document:
+        return jsonify({'error': 'Missing required fields: profile_picture and document_proof'}), 400
+
+    # Save files to a directory and store their names in the database
+    profile_picture_filename = secure_filename(profile_picture.filename)
+    registration_document_filename = secure_filename(registration_document.filename)
+
+    # Save files
+    profile_picture.save(os.path.join('uploads', profile_picture_filename))
+    registration_document.save(os.path.join('uploads', registration_document_filename))
+
+    video_filename = None
+    work_images_filename = None
+
+    if video:
+        video_filename = secure_filename(video.filename)
+        video.save(os.path.join('uploads', video_filename))
+
+    if work_images:
+        work_images_filename = secure_filename(work_images.filename)
+        work_images.save(os.path.join('uploads', work_images_filename))
+
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
@@ -271,7 +311,12 @@ def register_business():
         service_category=service_category,
         pricing=pricing,
         hours_available=hours_available,
-        location=location
+        location=location,
+        business_description=business_description,
+        profile_picture=profile_picture_filename,
+        registration_document=registration_document_filename,
+        video=video_filename,
+        work_images=work_images_filename,
     )
     service_provider.set_password(password)
     db.session.add(service_provider)
@@ -283,9 +328,9 @@ def register_business():
 # Service Provider Login
 @app.route('/businesslogin', methods=['POST'])
 def login_business_route():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    
+    email = request.form.get('email')
+    password = request.form.get('password')
 
     service_provider = ServiceProvider.query.filter_by(email=email).first()
     if service_provider and service_provider.check_password(password):
@@ -323,6 +368,8 @@ def add_service():
         error_message = f"Failed to add service: {str(e)}"
         return jsonify({'error': error_message}), 500
 
+
+# Service Provider Logout
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
     
@@ -425,13 +472,178 @@ def search_providers():
     serialized_providers = [{"id": provider.id, "full_name": provider.full_name} for provider in filtered_providers]
     return jsonify(serialized_providers)
    
+class Admins(Resource):
+    def get(self):
+        admins = Admin.query.all()
+        serialized_admin = []
 
+        for admin in admins:
+
+            # Fetch admin name
+            admin_id = Admin.query.filter_by(id=admin.id).first().id
+            admin_name = Admin.query.filter_by(id=admin.id).first().fullname
+            
+            serialized_admin.append({
+                "id": admin_id,
+                "admin": admin_name
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_admin), 200)
+    
+class AllUsers(Resource):
+    def get(self):
+        service_providers = ServiceProvider.query.all()
+        customers = Customer.query.all()
+        serialized_service_providers = []
+        serialized_customers = []
+
+        # Serialize service providers
+        for service_provider in service_providers:
+            serialized_service_providers.append({
+                "id": service_provider.id,
+                "fullname": service_provider.fullname,
+                "username":service_provider.username,
+                "email":service_provider.email,
+                "location":service_provider.location,
+                "service_title": service_provider.service_title,
+                "user_type": "service_provider"
+                # Add other fields as needed
+            })
+
+        # Serialize customers
+        for customer in customers:
+            serialized_customers.append({
+                "id": customer.id,
+                "fullname": customer.fullname,
+                "username":customer.username,
+                "email":customer.email,
+                "location":customer.location,
+                "service_title": "Customer",
+                "user_type": "customer"
+
+                # Add other fields as needed
+            })
+
+        # Return both serialized lists
+        return make_response(jsonify(serialized_service_providers, serialized_customers), 200)
+    
+class AllUser(Resource):
+    def delete(self, user_id, user_type):
+        if user_type == 'customer':
+            customer = Customer.query.filter_by(id=user_id).first()
+            if customer:
+                # Delete associated customer bookings
+                customer_bookings = Booking.query.filter_by(customer_id=user_id).all()
+                for booking in customer_bookings:
+                    db.session.delete(booking)
+                db.session.delete(customer)
+                db.session.commit()
+                return {"message": "Customer and associated bookings deleted successfully"}, 200
+            else:
+                return {"error": "Customer not found"}, 404
+        elif user_type == 'service_provider':
+            service_provider = ServiceProvider.query.filter_by(id=user_id).first()
+            if service_provider:
+                # Delete associated service provider bookings
+                service_provider_bookings = Booking.query.filter_by(service_provider_id=user_id).all()
+                for booking in service_provider_bookings:
+                    db.session.delete(booking)
+                # Delete associated services
+                services = Service.query.filter_by(service_provider_id=user_id).all()
+                for service in services:
+                    db.session.delete(service)
+                db.session.delete(service_provider)
+                db.session.commit()
+                return {"message": "Service provider, associated services, and bookings deleted successfully"}, 200
+            else:
+                return {"error": "Service provider not found"}, 404
+        else:
+            return {"error": "Invalid user type specified"}, 400
+
+        
+    def patch(self, user_id):
+        data = request.get_json()
+        if not data:
+            return {"error": "No data provided in the request"}, 400
+
+        customer = db.session.get(Customer, user_id)
+        if not customer:
+            return {"error": "User not found"}, 404
+
+        if 'fullname' in data:
+            customer.fullname = data['fullname']
+        if 'email' in data:
+            customer.email = data['email']
+        if 'location' in data:
+            customer.location = data['location']
+
+        db.session.commit()
+
+        updated_customer = {
+            "id": customer.id,
+            "fullname": customer.fullname,
+            "username": customer.username,
+            "email": customer.email,
+            "location": customer.location
+        }
+
+        return updated_customer, 200
+
+# Payment API endpoints
+class Payments(Resource):
+    # Endpoint to create a new payment
+    def post(self):
+        data = request.get_json()
+        payment_status = data.get('payment_status')
+        payment_option = data.get('payment_option')
+        booking_id = data.get('booking_id')
+        customer_id = data.get('customer_id')
+
+        if not all([payment_status, payment_option, booking_id, customer_id]):
+            return {"error": "Missing required fields"}, 400
+
+        new_payment = Payment(
+            payment_status=payment_status,
+            payment_option=payment_option,
+            booking_id=booking_id,
+            customer_id=customer_id
+        )
+        db.session.add(new_payment)
+        db.session.commit()
+
+        return {"message": "Payment created successfully", "payment_id": new_payment.id}, 201
+
+    # Endpoint to retrieve all payments
+    def get(self):
+        payments = Payment.query.all()
+        serialized_payments = []
+
+        for payment in payments:
+            serialized_payments.append({
+                "id": payment.id,
+                "payment_status": payment.payment_status,
+                "payment_option": payment.payment_option,
+                "booking_id": payment.booking_id,
+                "customer_id": payment.customer_id
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_payments), 200)    
 
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
 
 api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
+
+api.add_resource(Admins, "/admin", endpoint="admin")
+
+api.add_resource(AllUsers, "/users", endpoint="users")
+
+api.add_resource(AllUser, "/user/<int:user_id>/<string:user_type>", endpoint="user")
+
+api.add_resource(Payments, "/payments", endpoint="payments")
 
 
 if __name__ == '__main__':
