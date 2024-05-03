@@ -1,7 +1,3 @@
-
-
-# server/app.py
-
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
 from config import app, db, CORS, api, mail
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
@@ -409,7 +405,7 @@ class Bookings(Resource):
                 }
             )
         return make_response(jsonify(booking_data), 200)
-    
+
 # Service API
 class Services(Resource):
     def get(self):
