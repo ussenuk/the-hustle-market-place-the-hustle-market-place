@@ -127,6 +127,8 @@ def register_user():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
+
+# User Login
 @app.route('/userlogin', methods=['POST'])
 def login_user_route():
     data = request.get_json()
@@ -154,19 +156,26 @@ def logout_user_route():
 # Service Provider Registration
 @app.route('/businessregister', methods=['POST'])
 def register_business():
-    data = request.get_json()
+    # data = request.get_json()
 
-    # Extract fields from JSON data
-    fullname = data.get('fullname')
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    service_title = data.get('service_title')
-    service_category = data.get('service_category')
-    pricing = data.get('pricing')
-    hours_available = data.get('hours_available')
-    location = data.get('location')
-    business_description = data.get('business_description')
+    
+    # Extract fields from form data
+    fullname = request.form.get('fullname')
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    service_title = request.form.get('service_title')
+    service_category = request.form.get('service_category')
+    pricing = request.form.get('pricing')
+    hours_available = request.form.get('hours_available')
+    location = request.form.get('location')
+    business_description = request.form.get('business_description')
+    profile_picture = request.files['profile_picture']
+    video = request.files.get('video')
+    work_images = request.files['work_images']
+    registration_document = request.files['registration_document']
+
+
     
 
     # Check for missing required fields
@@ -177,8 +186,29 @@ def register_business():
             ('hours_available', hours_available), ('location', location), ('business_description', business_description)
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
-
     
+    if not profile_picture or not registration_document:
+        return jsonify({'error': 'Missing required fields: profile_picture and document_proof'}), 400
+
+    # Save files to a directory and store their names in the database
+    profile_picture_filename = secure_filename(profile_picture.filename)
+    registration_document_filename = secure_filename(registration_document.filename)
+
+    # Save files
+    profile_picture.save(os.path.join('uploads', profile_picture_filename))
+    registration_document.save(os.path.join('uploads', registration_document_filename))
+
+    video_filename = None
+    work_images_filename = None
+
+    if video:
+        video_filename = secure_filename(video.filename)
+        video.save(os.path.join('uploads', video_filename))
+
+    if work_images:
+        work_images_filename = secure_filename(work_images.filename)
+        work_images.save(os.path.join('uploads', work_images_filename))
+
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
@@ -190,7 +220,11 @@ def register_business():
         pricing=pricing,
         hours_available=hours_available,
         location=location,
-        business_description=business_description
+        business_description=business_description,
+        profile_picture=profile_picture_filename,
+        registration_document=registration_document_filename,
+        video=video_filename,
+        work_images=work_images_filename,
     )
     service_provider.set_password(password)
     db.session.add(service_provider)
@@ -202,9 +236,9 @@ def register_business():
 # Service Provider Login
 @app.route('/businesslogin', methods=['POST'])
 def login_business_route():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    
+    email = request.form.get('email')
+    password = request.form.get('password')
 
     service_provider = ServiceProvider.query.filter_by(email=email).first()
     if service_provider and service_provider.check_password(password):
@@ -242,6 +276,8 @@ def add_service():
         error_message = f"Failed to add service: {str(e)}"
         return jsonify({'error': error_message}), 500
 
+
+# Service Provider Logout
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
     
