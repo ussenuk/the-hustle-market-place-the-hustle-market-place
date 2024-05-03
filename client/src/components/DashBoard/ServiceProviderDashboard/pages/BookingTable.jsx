@@ -48,42 +48,48 @@ export default function BasicTable() {
     };
 
     return (
-        <div className="Table">
-            <h3>Recent Bookings</h3>
-            <TableContainer
-                component={Paper}
-                style={{ boxShadow: "0px 13px 20px 0px #80808029" }}
-            >
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead classes={{ root: 'table-body' }}>
-                        <TableRow classes={{ root: 'table-row' }}>
-                            <TableCell>Service Provider</TableCell>
-                            <TableCell align="left">Customer</TableCell>
-                            <TableCell align="left">Booking Date</TableCell>
-                            <TableCell align="left">Payment Status</TableCell>
-                            <TableCell align="left">Service</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody classes={{ root: 'table-body' }}>
-                        {bookingData.map((row) => (
-                            <TableRow classes={{ root: 'table-row' }}
-                                key={row.booking_id}
-                                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {row.service_provider}
-                                </TableCell>
-                                <TableCell align="left">{row.customer}</TableCell>
-                                <TableCell align="left">{row.time_service_provider_booked}</TableCell>
-                                <TableCell align="left">
-                                    <span className="status" style={makeStyle(row.payment_status)}>{row.payment_status}</span>
-                                </TableCell>
-                                <TableCell align="left" className="Details">{row.service_title}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </div>
+        <main className='main-container'>
+            <section style={{ display: "flex", justifyContent: "center" }}>
+                <div>
+                    <div style={{ textAlign: "center" }}>
+                        <h3>Recent Bookings</h3>
+                    </div>
+                    <TableContainer
+                        component={Paper}
+                        style={{ boxShadow: "0px 13px 20px 0px #80808029" }}
+                    >
+                        <Table style={{ borderCollapse: "collapse", width: "100%" }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Service Provider</TableCell>
+                                    <TableCell align="left">Customer</TableCell>
+                                    <TableCell align="left">Booking Date</TableCell>
+                                    <TableCell align="left">Payment Status</TableCell>
+                                    <TableCell align="left">Service</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {bookingData.map((row) => (
+                                    <TableRow
+                                        key={row.booking_id}
+                                        style={{ borderBottom: "1px solid #ddd" }}
+                                    >
+                                        <TableCell style={{ border: "1px solid #ddd", padding: "8px" }} component="th" scope="row">
+                                            {row.service_provider}
+                                        </TableCell>
+                                        <TableCell style={{ border: "1px solid #ddd", padding: "8px" }} align="left">{row.customer}</TableCell>
+                                        <TableCell style={{ border: "1px solid #ddd", padding: "8px" }} align="left">{row.time_service_provider_booked}</TableCell>
+                                        <TableCell style={{ border: "1px solid #ddd", padding: "8px" }} align="left">
+                                            <span className="status" style={makeStyle(row.payment_status)}>{row.payment_status}</span>
+                                        </TableCell>
+                                        <TableCell style={{ border: "1px solid #ddd", padding: "8px" }} align="left">{row.service_title}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </div>
+            </section>
+        </main>
     );
 }
