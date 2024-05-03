@@ -9,6 +9,7 @@ from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from validators import validate_file, validate_business_description
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -170,13 +171,11 @@ def register_business():
     hours_available = request.form.get('hours_available')
     location = request.form.get('location')
     business_description = request.form.get('business_description')
-    profile_picture = request.files['profile_picture']
+    profile_picture = request.files.get('profile_picture')
     video = request.files.get('video')
-    work_images = request.files['work_images']
-    registration_document = request.files['registration_document']
+    work_images = request.files.get('work_images')
+    registration_document = request.files.get('registration_document')
 
-
-    
 
     # Check for missing required fields
     if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location or not business_description:
@@ -187,8 +186,34 @@ def register_business():
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
     
-    if not profile_picture or not registration_document:
-        return jsonify({'error': 'Missing required fields: profile_picture and document_proof'}), 400
+    # Check for missing required file uploads
+    required_files = [
+        ('profile_picture', profile_picture), ('registration_document', registration_document), 
+        ('work_images', work_images)
+    ]
+    missing_files = ", ".join([field for field, file in required_files if file is None])
+    if missing_files:
+        return jsonify({'error': f'Missing required files: {missing_files}'}), 400
+    
+
+    # Validate file types
+    if not validate_file(profile_picture, ['image/jpeg', 'image/png']):
+        return jsonify({'error': 'Profile picture must be in JPEG or PNG format'}), 400
+
+    if video and not validate_file(video, ['video/mp4']):
+        return jsonify({'error': 'Video must be in MP4 format'}), 400
+    
+     # Validate file types
+    if not validate_file(work_images, ['image/jpeg', 'image/png']):
+        return jsonify({'error': 'Work image must be in JPEG or PNG format'}), 400
+
+    if not validate_file(registration_document, ['application/pdf', 'image/jpeg', 'image/png']):
+        return jsonify({'error': 'Registration document must be in PDF, JPEG, or PNG format'}), 400
+
+    # Validate business description length
+    if not validate_business_description(business_description):
+        return jsonify({'error': 'Business description must be between 200 and 1000 characters'}), 400
+
 
     # Save files to a directory and store their names in the database
     profile_picture_filename = secure_filename(profile_picture.filename)
@@ -226,6 +251,7 @@ def register_business():
         video=video_filename,
         work_images=work_images_filename,
     )
+    
     service_provider.set_password(password)
     db.session.add(service_provider)
     db.session.commit()
@@ -373,3 +399,14 @@ if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
 
+
+
+
+
+    
+    # if not profile_picture or not registration_document or not work_images:
+    #     missing = ", ".join ([field for field, value in [
+    #         ['profile_picture', profile_picture], ['registration_document', registration_document], ['work_images', work_images]
+    #     ]if not value])
+    #     return jsonify({'error': f'Missing required fields: {missing}'}), 400
+    
