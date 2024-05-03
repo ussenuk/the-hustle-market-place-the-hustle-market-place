@@ -137,6 +137,8 @@ def register_user():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
+
+# User Login
 @app.route('/userlogin', methods=['POST'])
 def login_user_route():
     data = request.get_json()
@@ -161,34 +163,144 @@ def logout_user_route():
 
 
 
-# Service Provider Registration
 
+
+@app.route('/search_services', methods=['GET'])
+def search_services():
+    # Extract search parameters from the request
+    data = request.json
+    search_query = data.get('searchQuery')
+    service_category = data.get('serviceCategory')
+
+    # Query services based on the search parameters
+    if not search_query:
+        return jsonify({'error': 'Missing search query'}), 400
+
+    filtered_services = Service.query.filter(Service.service_title.ilike(f'%{search_query}%'))
+
+    # Filter by service category
+    if service_category:
+        filtered_services = filtered_services.filter(Service.service_category == service_category)
+
+    # Check if any services match the search criteria
+    if filtered_services.count() == 0:
+        return jsonify({'error': 'No matching services found'}), 404
+
+    serialized_services = [
+        {
+            'service_id': service.id,
+            'service_title': service.service_title,
+            'service_price': service.service_price,
+            'service_category': service.service_category
+        }
+        for service in filtered_services
+    ]
+
+    return jsonify(serialized_services), 200
+
+
+""" @app.route('/search_services', methods=['POST'])
+def search_services():
+    # Extract search parameters from the request
+    data = request.json
+    search_query = data.get('searchQuery')
+    min_price = data.get('minPrice')
+    max_price = data.get('maxPrice')
+    availability_hours = data.get('availabilityHours')
+    service_category = data.get('serviceCategory')
+    user_rating = data.get('userRating')
+
+    # Query services based on the search parameters
+    filtered_services = Service.query.filter(Service.service_title.ilike(f'%{search_query}%'))
+
+    # Filter by price range
+    if min_price and max_price:
+        filtered_services = filtered_services.filter(Service.service_price.between(min_price, max_price))
+
+    # Filter by availability hours
+    if availability_hours:
+        filtered_services = filtered_services.filter(Service.availability_hours == availability_hours)
+
+    # Filter by service category
+    if service_category:
+        filtered_services = filtered_services.filter(Service.service_category == service_category)
+
+    # Filter by user rating
+    if user_rating:
+        filtered_services = filtered_services.filter(Service.user_rating == user_rating)
+
+    # Serialize the filtered services
+    serialized_services = [
+        {
+            'service_id': service.id,
+            'service_title': service.service_title,
+            'service_price': service.service_price,
+            # Add other fields as needed
+        }
+        for service in filtered_services
+    ]
+
+    return jsonify(serialized_services), 200 """
+
+
+
+
+# Service Provider Registration
 @app.route('/businessregister', methods=['POST'])
 def register_business():
-    data = request.get_json()
+    # data = request.get_json()
 
-    # Extract fields from JSON data
-    fullname = data.get('fullname')
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    service_title = data.get('service_title')
-    service_category = data.get('service_category')
-    pricing = data.get('pricing')
-    hours_available = data.get('hours_available')
-    location = data.get('location')
+    
+    # Extract fields from form data
+    fullname = request.form.get('fullname')
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    service_title = request.form.get('service_title')
+    service_category = request.form.get('service_category')
+    pricing = request.form.get('pricing')
+    hours_available = request.form.get('hours_available')
+    location = request.form.get('location')
+    business_description = request.form.get('business_description')
+    profile_picture = request.files['profile_picture']
+    video = request.files.get('video')
+    work_images = request.files['work_images']
+    registration_document = request.files['registration_document']
+
+
     
 
     # Check for missing required fields
-    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location :
+    if not fullname or not username or not email or not password or not service_title or not service_category or not pricing or not hours_available or not location or not business_description:
         missing = ", ".join([field for field, value in [
             ('fullname', fullname), ('username', username), ('email', email), ('password', password),
             ('service_title', service_title), ('service_category', service_category), ('pricing', pricing),
-            ('hours_available', hours_available), ('location', location)
+            ('hours_available', hours_available), ('location', location), ('business_description', business_description)
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
-
     
+    if not profile_picture or not registration_document:
+        return jsonify({'error': 'Missing required fields: profile_picture and document_proof'}), 400
+
+    # Save files to a directory and store their names in the database
+    profile_picture_filename = secure_filename(profile_picture.filename)
+    registration_document_filename = secure_filename(registration_document.filename)
+
+    # Save files
+    profile_picture.save(os.path.join('uploads', profile_picture_filename))
+    registration_document.save(os.path.join('uploads', registration_document_filename))
+
+    video_filename = None
+    work_images_filename = None
+
+    if video:
+        video_filename = secure_filename(video.filename)
+        video.save(os.path.join('uploads', video_filename))
+
+    if work_images:
+        work_images_filename = secure_filename(work_images.filename)
+        work_images.save(os.path.join('uploads', work_images_filename))
+
 
     # Create a new ServiceProvider instance
     service_provider = ServiceProvider(
@@ -199,7 +311,12 @@ def register_business():
         service_category=service_category,
         pricing=pricing,
         hours_available=hours_available,
-        location=location
+        location=location,
+        business_description=business_description,
+        profile_picture=profile_picture_filename,
+        registration_document=registration_document_filename,
+        video=video_filename,
+        work_images=work_images_filename,
     )
     service_provider.set_password(password)
     db.session.add(service_provider)
@@ -211,9 +328,9 @@ def register_business():
 # Service Provider Login
 @app.route('/businesslogin', methods=['POST'])
 def login_business_route():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    
+    email = request.form.get('email')
+    password = request.form.get('password')
 
     service_provider = ServiceProvider.query.filter_by(email=email).first()
     if service_provider and service_provider.check_password(password):
@@ -251,6 +368,8 @@ def add_service():
         error_message = f"Failed to add service: {str(e)}"
         return jsonify({'error': error_message}), 500
 
+
+# Service Provider Logout
 @app.route('/businesslogout', methods=['GET'])
 def logout_business_route():
     
@@ -312,6 +431,8 @@ class Services(Resource):
 
         return make_response(jsonify(serialized_services), 200)
     
+    
+    
 class ServiceProviders(Resource):
     def get(self):
         service_providers = ServiceProvider.query.all()
@@ -332,6 +453,24 @@ class ServiceProviders(Resource):
             })
 
         return make_response(jsonify(serialized_service_provider), 200)
+    
+@app.route('/search/providers', methods=['GET'])
+def search_providers():
+    # Get search parameters from the request
+    availability_hours = request.args.get('availabilityHours')
+    user_rating = request.args.get('userRating')
+
+    # Query service providers based on search parameters
+    filtered_providers = ServiceProvider.query.all()
+    if availability_hours:
+        filtered_providers = [provider for provider in filtered_providers if provider.availability_hours == availability_hours]
+        
+    if user_rating:
+        filtered_providers = [provider for provider in filtered_providers if provider.user_rating == user_rating]
+
+    # Serialize the service providers and return as JSON response
+    serialized_providers = [{"id": provider.id, "full_name": provider.full_name} for provider in filtered_providers]
+    return jsonify(serialized_providers)
    
 class Admins(Resource):
     def get(self):

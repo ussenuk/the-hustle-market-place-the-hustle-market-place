@@ -1,3 +1,5 @@
+
+
 # server/models.py
 
 from flask_sqlalchemy import SQLAlchemy
@@ -65,9 +67,12 @@ class ServiceProvider(db.Model, SerializerMixin, UserMixin):
     pricing = db.Column(db.Integer)
     hours_available = db.Column(db.String(255))
     location = db.Column(db.String(255))
-    # profile_picture = db.Column(db.String(255), nullable=False)
-    # video_demo_of_service_offered = db.Column(db.String(255), nullable=True)
-    # documents = db.Column(db.String(255), nullable=False)
+    business_description = db.Column(db.Text)
+    profile_picture = db.Column(db.String(255))
+    video = db.Column(db.String(255))
+    work_images = db.Column(db.Text)  # JSON or delimited string
+    registration_document = db.Column(db.String(255))
+
 
     bookings = db.relationship('Booking', backref=db.backref('service_provider', lazy=True))
     services = db.relationship('Service', backref=db.backref('service_provider', lazy=True))
