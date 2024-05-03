@@ -1,4 +1,8 @@
-import React,{useState, useEffect} from "react";
+
+
+// client/src/App.jsx
+
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header/Header";
 import HomePage from "./components/HomePage/HomePage";
@@ -7,9 +11,13 @@ import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
-import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
+import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoa
+import Search from "./components/Search/Search";
+import AdminAccess from "./components/Admin/Admin";
+
 
 const App = () => {
+
   return (
     <Router>
       <AppContent />
@@ -37,6 +45,12 @@ const AppContent = () => {
   }, []);
 
 
+  /* const handleSearch = (searchTerm) => {
+    navigate(`/servicespage?search=${searchTerm}`);
+    console.log('Search parameters:', searchTerm)
+  } */
+
+
 
   function handleLogin(isLoggedIn){
     setIsLoggedIn(isLoggedIn);
@@ -61,10 +75,14 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/admin" element={<AdminAccess />} />
         <Route path="/userlogin" element={<UserLogin />} />
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
+        <Route path="/search" element={<Search />} />
+
+      
       </Routes>
     </div>
   );

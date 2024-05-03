@@ -19,6 +19,7 @@ const ServicesPage = () => {
       } catch (error) {
         console.error("Error fetching services:", error);
         setError("Failed to fetch services. Please try again.");
+
       }
     };
 
