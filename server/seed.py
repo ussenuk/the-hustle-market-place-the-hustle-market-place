@@ -50,9 +50,17 @@ with app.app_context():
     user1 = Customer(fullname='John Doe', username='john_doe', email='john@example.com', location='New York')
     user2 = Customer(fullname='Jane Doe', username='jane_doe', email='jane@example.com',  location='Los Angeles')
     user3 = Customer(fullname='Alice Smith', username='alice_smith', email='alice@example.com' , location='San Francisco')
-
+    user4 = Customer(fullname='James Doe1', username='john_doe1', email='john1@example.com', location='New York')
+    user5 = Customer(fullname='June Doe1', username='jane_doe1', email='jane1@example.com',  location='Los Angeles')
+    user6 = Customer(fullname='Alie hu', username='alice_smith1', email='alice1@example.com' , location='San Francisco')
+    user7 = Customer(fullname='Johnathan Doe', username='john_doe2', email='john2@example.com', location='New York')
+    user8 = Customer(fullname='Janeth Doe', username='jane_doe2', email='jane2@example.com',  location='Los Angeles')
+    user9 = Customer(fullname='Alicya Smith', username='alice_smith2', email='alice2@example.com' , location='San Francisco')
+    user10 = Customer(fullname='Jammy Doe1', username='john_doe13', email='john3@example.com', location='New York')
+    user11 = Customer(fullname='July Doe1', username='jane_doe13', email='jane3@example.com',  location='Los Angeles')
+    user12 = Customer(fullname='Alid hu', username='alice_smith3', email='alice3@example.com' , location='San Francisco')
     # Add users to session and commit
-    db.session.add_all([user1, user2, user3])
+    db.session.add_all([user1, user2, user3,user4, user5, user6,user7, user8, user9,user10, user11, user12])
     db.session.commit()
 
     # Create sample service providers
@@ -77,7 +85,15 @@ with app.app_context():
     booking1 = Booking(service_provider_id=service_provider1.id, time_service_provider_booked=datetime.strptime('2024-04-20 10:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user1.id)
     booking2 = Booking(service_provider_id=service_provider2.id, time_service_provider_booked=datetime.strptime('2024-04-21 11:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user2.id)
     booking3 = Booking(service_provider_id=service_provider3.id, time_service_provider_booked=datetime.strptime('2024-04-22 12:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user3.id)
-
+    booking4 = Booking(service_provider_id=service_provider1.id, time_service_provider_booked=datetime.strptime('2024-04-20 10:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user4.id)
+    booking5 = Booking(service_provider_id=service_provider2.id, time_service_provider_booked=datetime.strptime('2024-04-21 11:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user5.id)
+    booking6 = Booking(service_provider_id=service_provider3.id, time_service_provider_booked=datetime.strptime('2024-04-22 12:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user6.id)
+    booking7 = Booking(service_provider_id=service_provider1.id, time_service_provider_booked=datetime.strptime('2024-04-20 10:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user7.id)
+    booking8 = Booking(service_provider_id=service_provider2.id, time_service_provider_booked=datetime.strptime('2024-04-21 11:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user8.id)
+    booking9 = Booking(service_provider_id=service_provider3.id, time_service_provider_booked=datetime.strptime('2024-04-22 12:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user9.id)
+    booking10 = Booking(service_provider_id=service_provider1.id, time_service_provider_booked=datetime.strptime('2024-04-20 10:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user10.id)
+    booking11 = Booking(service_provider_id=service_provider2.id, time_service_provider_booked=datetime.strptime('2024-04-21 11:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user11.id)
+    booking12 = Booking(service_provider_id=service_provider3.id, time_service_provider_booked=datetime.strptime('2024-04-22 12:00:00', '%Y-%m-%d %H:%M:%S'), customer_id=user12.id)
     # Add bookings to session and commit
     db.session.add_all([booking1, booking2, booking3])
     db.session.commit()
