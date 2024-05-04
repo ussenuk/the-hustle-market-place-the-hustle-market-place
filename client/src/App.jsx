@@ -11,7 +11,7 @@ import UserLogin from "./components/Userlogin/UserLogin";
 import BusinessLogin from "./components/Businesslogin/BusinessLogin";
 import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
-import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoa
+import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
 import Search from "./components/Search/Search";
 import AdminAccess from "./components/Admin/Admin";
 import axios from "axios";
