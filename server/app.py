@@ -1,4 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
+
+
+# server/app.py
+
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
 from config import app, db, CORS, api, mail
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
 from flask_restful import Resource, reqparse
@@ -9,13 +13,20 @@ from validators import validate_file, validate_business_description
 from flask_mail import Mail, Message
 #Sending an email using Flask-Mail
 
-@app.route('/send-email')
+@app.route('/send-email', methods=['POST'])
 def send_email():
-    message = Message('Test 2 Email', sender='hutlemarket@fastmail.com', recipients = ['ukimanuka@gmail.com'])
-    message.body = 'This is a test email sent from Flask!'
+    data = request.json
+    email_addresses = data.get('emailAddresses')
+    additional_info = data.get('additionalInfo')
+    recipients = email_addresses.split(',')  # Split email addresses by comma
+    
+    # Customize the email body with additional information
+    message_body = f'This is an invitation email sent from HutleMarket Place!\n\nAdditional information: {additional_info}'
+
+    message = Message('Hutle Market invitation Email', sender='hutlemarket@fastmail.com', recipients=recipients)
+    message.body = message_body
     mail.send(message)
     return 'Email sent!'
-
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -302,25 +313,34 @@ def register_business():
     if not validate_business_description(business_description):
         return jsonify({'error': 'Business description must be between 200 and 1000 characters'}), 400
 
+    
+    # Customize filename based on username or fullname and file extension
+    filename_prefix = username
+    profile_picture_filename = secure_filename(f"{filename_prefix}_profile_picture.{profile_picture.filename.rsplit('.', 1)[1]}")
+    registration_document_filename = secure_filename(f"{filename_prefix}_registration_document.{registration_document.filename.rsplit('.', 1)[1]}")
+    
+    
 
     # Save files to a directory and store their names in the database
-    profile_picture_filename = secure_filename(profile_picture.filename)
-    registration_document_filename = secure_filename(registration_document.filename)
+    # profile_picture_filename = secure_filename(profile_picture.filename)
+    # registration_document_filename = secure_filename(registration_document.filename)
 
     # Save files
-    profile_picture.save(os.path.join('uploads', profile_picture_filename))
-    registration_document.save(os.path.join('uploads', registration_document_filename))
+    profile_picture.save(os.path.join('static/uploads', profile_picture_filename))
+    registration_document.save(os.path.join('static/uploads', registration_document_filename))
 
     video_filename = None
     work_images_filename = None
 
     if video:
-        video_filename = secure_filename(video.filename)
-        video.save(os.path.join('uploads', video_filename))
+        video_filename = secure_filename(f"{filename_prefix}_video.{video.filename.rsplit('.', 1)[1]}")
+        # video_filename = secure_filename(video.filename)
+        video.save(os.path.join('static/uploads', video_filename))
 
     if work_images:
-        work_images_filename = secure_filename(work_images.filename)
-        work_images.save(os.path.join('uploads', work_images_filename))
+        work_images_filename = secure_filename(f"{filename_prefix}_work_images.{work_images.filename.rsplit('.', 1)[1]}")
+        # work_images_filename = secure_filename(work_images.filename)
+        work_images.save(os.path.join('static/uploads', work_images_filename))
 
 
     # Create a new ServiceProvider instance
@@ -432,6 +452,42 @@ class Bookings(Resource):
             )
         return make_response(jsonify(booking_data), 200)
 
+@app.route('/bookings/<int:service_provider_id>', methods=['GET'])
+def get_bookings_by_service_provider(service_provider_id):
+    # Filter bookings by service_provider_id
+    booking_records = Booking.query.filter_by(service_provider_id=service_provider_id).all()
+
+    booking_data = []
+
+    for record in booking_records:
+        # Fetching customer name
+        customer_name = Customer.query.filter_by(id=record.customer_id).first().fullname
+        # Fetching service provider name
+        service_provider_name = ServiceProvider.query.filter_by(id=record.service_provider_id).first().fullname
+        # Fetching payment status
+        payment_status = Payment.query.filter_by(booking_id=record.id).first().payment_status if record.payments else None
+
+        # Fetching service information
+        service_info = Service.query.filter_by(service_provider_id=record.service_provider_id).first()
+        service_title = service_info.service_title if service_info else None
+        service_category = service_info.service_category if service_info else None
+
+        booking_data.append(
+            {
+                "booking_id": record.id,
+                "customer": customer_name,
+                "service_provider": service_provider_name,
+                "service_title": service_title,
+                "service_category": service_category,
+                "time_service_provider_booked": record.time_service_provider_booked,
+                "payment_status": payment_status
+            }
+        )
+
+    return make_response(jsonify(booking_data), 200)
+
+
+
 # Service API
 class Services(Resource):
     def get(self):
@@ -442,11 +498,13 @@ class Services(Resource):
         for service in services:
             # Fetch service provider name
             service_provider_name = ServiceProvider.query.filter_by(id=service.service_provider_id).first().fullname
+            service_provider_price = ServiceProvider.query.filter_by(id=service.service_provider_id).first().pricing
 
             serialized_services.append({
                 "service_id": service.id,
                 "service_title": service.service_title,
                 "service_category": service.service_category,
+                "pricing": service_provider_price,
                 "service_provider": service_provider_name,
                 # Add other fields as needed
             })
@@ -454,7 +512,10 @@ class Services(Resource):
         return make_response(jsonify(serialized_services), 200)
     
     
-    
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(app.static_folder, filename)
+
 class ServiceProviders(Resource):
     def get(self):
         service_providers = ServiceProvider.query.all()
@@ -463,19 +524,50 @@ class ServiceProviders(Resource):
         for service_provider in service_providers:
 
             # Fetch service provider name
-            service_provider_id = ServiceProvider.query.filter_by(id=service_provider.id).first().id
-            service_provider_name = ServiceProvider.query.filter_by(id=service_provider.id).first().fullname
-            service_provider_service_title = ServiceProvider.query.filter_by(id=service_provider.id).first().service_title
+            service_provider_id = service_provider.id
+            service_provider_username = service_provider.username
+            service_provider_name = service_provider.fullname
+            service_provider_service_title = service_provider.service_title
+            service_provider_bio = service_provider.business_description
+
+            # Construct filenames based on filename prefix
+            filename_prefix = service_provider_username  # Assuming username is used as filename prefix
+            
+            profile_picture_url = None
+            video_url = None
+            work_images_url = None
+            registration_document_url = None
+
+            if service_provider.profile_picture:
+                profile_picture_filename = f"{filename_prefix}_profile_picture.{service_provider.profile_picture.split('.')[-1]}"
+                profile_picture_url = url_for('static', filename=f'uploads/{profile_picture_filename}')
+
+            if service_provider.video:
+                video_filename = f"{filename_prefix}_video.{service_provider.video.split('.')[-1]}"
+                video_url = url_for('static', filename=f'uploads/{video_filename}')
+
+            if service_provider.work_images:
+                work_images_filename = f"{filename_prefix}_work_images.{service_provider.work_images.split('.')[-1]}"
+                work_images_url = url_for('static', filename=f'uploads/{work_images_filename}')
+
+            if service_provider.registration_document:
+                registration_document_filename = f"{filename_prefix}_registration_document.{service_provider.registration_document.split('.')[-1]}"
+                registration_document_url = url_for('static', filename=f'uploads/{registration_document_filename}')
 
             serialized_service_provider.append({
                 "id": service_provider_id,
                 "service_provider": service_provider_name,
-                "service_title": service_provider_service_title
+                "service_title": service_provider_service_title,
+                "bio": service_provider_bio,
+                "profile_picture_url": profile_picture_url,
+                "video_url": video_url,
+                "work_images_url": work_images_url,
+                "registration_document_url": registration_document_url,
                 # Add other fields as needed
             })
 
         return make_response(jsonify(serialized_service_provider), 200)
-    
+
 @app.route('/search/providers', methods=['GET'])
 def search_providers():
     # Get search parameters from the request
@@ -551,6 +643,40 @@ class AllUsers(Resource):
         return make_response(jsonify(serialized_service_providers, serialized_customers), 200)
     
 class AllUser(Resource):
+    def get(self, user_id, user_type):
+        if user_type == 'customer':
+            customer = Customer.query.filter_by(id=user_id).first()
+            if customer:
+                serialized_customer = {
+                    "id": customer.id,
+                    "fullname": customer.fullname,
+                    "username": customer.username,
+                    "email": customer.email,
+                    "location": customer.location,
+                    "user_type": "customer"
+                    # Add other fields as needed
+                }
+                return serialized_customer, 200
+            else:
+                return {"error": "Customer not found"}, 404
+        elif user_type == 'service_provider':
+            service_provider = ServiceProvider.query.filter_by(id=user_id).first()
+            if service_provider:
+                serialized_service_provider = {
+                    "id": service_provider.id,
+                    "fullname": service_provider.fullname,
+                    "username": service_provider.username,
+                    "email": service_provider.email,
+                    "location": service_provider.location,
+                    "business_description": service_provider.business_description,
+                    "user_type": "service_provider"
+                    # Add other fields as needed
+                }
+                return serialized_service_provider, 200
+            else:
+                return {"error": "Service provider not found"}, 404
+        else:
+            return {"error": "Invalid user type specified"}, 400
     def delete(self, user_id, user_type):
         if user_type == 'customer':
             customer = Customer.query.filter_by(id=user_id).first()
@@ -583,34 +709,39 @@ class AllUser(Resource):
         else:
             return {"error": "Invalid user type specified"}, 400
 
-        
-    def patch(self, user_id):
+    def patch(self, user_id, user_type):
         data = request.get_json()
         if not data:
             return {"error": "No data provided in the request"}, 400
 
-        customer = db.session.get(Customer, user_id)
-        if not customer:
-            return {"error": "User not found"}, 404
+        if user_type == 'service_provider':
+            service_provider = ServiceProvider.query.filter_by(id=user_id).first()
+            if not service_provider:
+                return {"error": "Service Provider not found"}, 404
 
-        if 'fullname' in data:
-            customer.fullname = data['fullname']
-        if 'email' in data:
-            customer.email = data['email']
-        if 'location' in data:
-            customer.location = data['location']
+            if 'fullname' in data:
+                service_provider.fullname = data['fullname']
+            if 'email' in data:
+                service_provider.email = data['email']
+            if 'location' in data:
+                service_provider.location = data['location']
+            if 'business_description' in data:
+                service_provider.business_description = data['business_description']
 
-        db.session.commit()
+            db.session.commit()
 
-        updated_customer = {
-            "id": customer.id,
-            "fullname": customer.fullname,
-            "username": customer.username,
-            "email": customer.email,
-            "location": customer.location
-        }
+            updated_service_provider = {
+                "id": service_provider.id,
+                "fullname": service_provider.fullname,
+                "username": service_provider.username,
+                "email": service_provider.email,
+                "location": service_provider.location,
+                "business_description": service_provider.business_description
+            }
 
-        return updated_customer, 200
+            return updated_service_provider, 200
+        else:
+            return {"error": "Invalid user type specified or user type not supported for patch operation"}, 400
 
 # Payment API endpoints
 class Payments(Resource):
@@ -652,6 +783,9 @@ class Payments(Resource):
             })
 
         return make_response(jsonify(serialized_payments), 200)    
+
+
+
 
 api.add_resource(Services, "/services", endpoint="services")
 
