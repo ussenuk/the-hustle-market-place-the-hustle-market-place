@@ -251,7 +251,7 @@ def register_business():
         video=video_filename,
         work_images=work_images_filename,
     )
-    
+
     service_provider.set_password(password)
     db.session.add(service_provider)
     db.session.commit()
@@ -398,15 +398,3 @@ api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provid
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
-
-
-
-
-
-    
-    # if not profile_picture or not registration_document or not work_images:
-    #     missing = ", ".join ([field for field, value in [
-    #         ['profile_picture', profile_picture], ['registration_document', registration_document], ['work_images', work_images]
-    #     ]if not value])
-    #     return jsonify({'error': f'Missing required fields: {missing}'}), 400
-    
