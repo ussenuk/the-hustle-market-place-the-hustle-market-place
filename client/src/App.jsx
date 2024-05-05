@@ -15,6 +15,7 @@ import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard
 import Search from "./components/Search/Search";
 import AdminAccess from "./components/Admin/Admin";
 import axios from "axios";
+import Message from "./components/Message/Message";
 
 const App = () => {
 
@@ -101,6 +102,8 @@ const AppContent = () => {
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin}/>} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/http-call" element={<Message />} />
       </Routes>
     </div>
   );

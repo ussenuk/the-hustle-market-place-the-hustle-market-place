@@ -11,6 +11,10 @@ import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from validators import validate_file, validate_business_description
 from flask_mail import Mail, Message
+from Flask.socketio import SocketIO,emit
+
+
+socketIO = SocketIO(app, cors_allowed_origins="*")
 #Sending an email using Flask-Mail
 
 @app.route('/send-email', methods=['POST'])
