@@ -16,7 +16,7 @@ from flask_mail import Mail
 
 app = Flask(__name__ , static_url_path='/static')
 api = Api(app)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 

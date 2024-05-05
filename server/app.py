@@ -11,10 +11,35 @@ import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from validators import validate_file, validate_business_description
 from flask_mail import Mail, Message
-from Flask.socketio import SocketIO,emit
+from flask_socketio import SocketIO, emit
+import socketio
 
 
 socketIO = SocketIO(app, cors_allowed_origins="*")
+
+@app.route('/http-call')
+def http_call():
+    data={'data':"Text received"}
+    return jsonify(data)
+
+@socketio.on("connect")
+def connected():
+    print(request.sid, "connected")
+    emit("connect", {"data":f"id: {request.sid} is connected"})
+
+@socketio.on("data")
+def handle_data(data):
+    print("Data received:", str(data))
+    emit("data", {"data":data, "id":request.sid}, broadcast=True)
+
+@socketio.on("disconnect")
+def disconnected():
+    print("User disconnected")
+    emit("disconnect", f"user: {request.sid} is disconnected",broadcast=True)
+
+
+
+
 #Sending an email using Flask-Mail
 
 @app.route('/send-email', methods=['POST'])
