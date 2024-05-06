@@ -13,7 +13,7 @@ import ServicesPage from "./components/ServicesPage/ServicesPage";
 import Navigation from './components/NavBar/Navbar';
 import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard';
 import AdminAccess from "./components/Admin/Admin";
-
+import PayPalButton from "./components/Paypal/PayPalButton";
 const App = () => {
   return (
     <Router>
@@ -71,7 +71,7 @@ const AppContent = () => {
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}/>} />
-        <Route path="/paypalButton" element={<PayPalButton isLoggedIn={isLoggedIn} />} /> {/* Define PayPalButton route */}
+        <Route path="/PayPalButton" element={<PayPalButton isLoggedIn={isLoggedIn} />} /> {/* Define PayPalButton route */}
       </Routes>
     </div>
   );

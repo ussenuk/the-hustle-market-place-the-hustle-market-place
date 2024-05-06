@@ -331,6 +331,32 @@ api.add_resource(Bookings, "/booking", endpoint="booking")
 
 api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
 
+@app.route('/savepayment', methods=['POST'])
+def save_payment():
+    # Get the payment details from the request
+    payment_data = request.json
+
+    # Create a new Payment object with the received data
+    payment = Payment(
+        
+        payment_status=payment_data.get('payment').get('status'),
+        payment_option=payment_data.get('payment').get('option'),
+        booking_id=payment_data.get('payment').get('booking_id'),
+        customer_id=payment_data.get('customer_id')
+        # Add more fields as needed
+    )
+
+    # Add the Payment object to the database session
+    db.session.add(payment)
+
+    try:
+        # Commit the session to save the payment details to the database
+        db.session.commit()
+        return jsonify({'message': 'Payment details saved successfully'}), 201
+    except Exception as e:
+        # Rollback the session in case of error
+        db.session.rollback()
+        return jsonify({'error': 'Failed to save payment details', 'details': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
