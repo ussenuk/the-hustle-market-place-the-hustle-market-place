@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+from datetime import datetime
 #Sending an email using Flask-Mail
 
 @app.route('/send-email')
@@ -340,6 +341,9 @@ def add_service():
         data = request.json
         service_title = data.get('service_title')
         service_category = data.get('service_category')
+        location = data.get('location')
+        pricing = data.get('pricing')
+        hours_available = data.get('hours_available')
         
         # Retrieve service provider ID from request headers
         service_provider_id = request.headers.get('ServiceProviderId')
@@ -355,6 +359,9 @@ def add_service():
         new_service = Service(
             service_title=service_title,
             service_category=service_category,
+            location=location,
+            pricing=pricing,
+            hours_available=hours_available,
             service_provider_id=service_provider_id
         )
         db.session.add(new_service)
@@ -363,7 +370,6 @@ def add_service():
     except Exception as e:
         error_message = f"Failed to add service: {str(e)}"
         return jsonify({'error': error_message}), 500
-
 
 # Service Provider Logout
 @app.route('/businesslogout', methods=['GET'])
@@ -422,10 +428,14 @@ class Services(Resource):
                 "service_title": service.service_title,
                 "service_category": service.service_category,
                 "service_provider": service_provider_name,
+                "location": service.location,  # Add location field
+                "hours_available": service.hours_available,  # Add hours_available field
+                "pricing": service.pricing,  # Add pricing field
                 # Add other fields as needed
             })
 
         return make_response(jsonify(serialized_services), 200)
+
     
     
     
@@ -467,7 +477,96 @@ def search_providers():
     # Serialize the service providers and return as JSON response
     serialized_providers = [{"id": provider.id, "full_name": provider.full_name} for provider in filtered_providers]
     return jsonify(serialized_providers)
-   
+
+# @app.route('/services/provider', methods=['GET'])
+# def get_services_by_provider():
+#     try:
+#         # Retrieve service provider ID from request headers
+#         service_provider_id = request.headers.get('ServiceProviderId')
+        
+#         # If service provider ID is not found in headers, check session
+#         if not service_provider_id:
+#             service_provider_id = session.get('business_id')
+        
+#         # If service provider ID is still not found, return an error
+#         if not service_provider_id:
+#             return jsonify({'error': 'Service provider ID not provided'}), 400
+
+#         # Retrieve services associated with the logged-in provider
+#         services = Service.query.filter_by(service_provider_id=service_provider_id).all()
+
+#         serialized_services = []
+
+#         for service in services:
+#             serialized_services.append({
+#                 "service_id": service.id,
+#                 "service_title": service.service_title,
+#                 "service_category": service.service_category,
+#                 "service_provider": service_provider_id,
+#                 "pricing": service.pricing,
+#                 "hours_available": service.hours_available,
+#                 "location": service.location
+#                 # Add other fields as needed
+#             })
+
+#         return jsonify(serialized_services), 200
+#     except Exception as e:
+#         error_message = f"Failed to fetch services: {str(e)}"
+#         return jsonify({'error': error_message}), 500
+
+@app.route('/add_booking', methods=['POST'])
+def add_booking():
+    try:
+        data = request.json
+        
+        # Extract required data from the request
+        service_provider_id = data.get('service_provider_id')
+        customer_id = data.get('customer_id')  # Replacing customer_id with user_id
+        time_service_provider_booked = data.get('time_service_provider_booked')
+
+        # Convert time_booked string to datetime object if it is provided
+        time_booked = None
+        if time_service_provider_booked:
+            time_booked = datetime.strptime(time_service_provider_booked, '%Y-%m-%d %H:%M:%S')
+
+        print(f'{time_service_provider_booked}')
+        print(f'{time_booked}')
+        # Create a new booking object
+        new_booking = Booking(
+            service_provider_id=service_provider_id,
+            customer_id=customer_id,  # Updated to user_id
+            time_service_provider_booked=time_booked
+        )
+
+        # Add the booking to the database
+        db.session.add(new_booking)
+        db.session.commit()
+
+        return jsonify({"message": "Booking created successfully"}), 201
+    except Exception as e:
+        error_message = f"Failed to create booking: {str(e)}"
+        return jsonify({'error': error_message}), 500
+        
+@app.route('/bookings/<int:service_provider_id>', methods=['GET'])
+def get_bookings_for_service_provider(service_provider_id):
+    try:
+        bookings = Booking.query.filter_by(service_provider_id=service_provider_id).all()
+
+        serialized_bookings = []
+
+        for booking in bookings:
+            serialized_bookings.append({
+                "id": booking.id,
+                "time_service_provider_booked": booking.time_service_provider_booked,
+                "customer_id": booking.customer_id,
+                # Add other fields as needed
+            })
+
+        return jsonify(serialized_bookings), 200
+    except Exception as e:
+        error_message = f"Failed to fetch bookings: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
 class Admins(Resource):
     def get(self):
         admins = Admin.query.all()
