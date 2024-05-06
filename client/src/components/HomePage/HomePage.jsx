@@ -7,7 +7,7 @@ const HomePage = () => {
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
   const [bookingDateTime, setBookingDateTime] = useState("");
-   // State to store booking date time
+  const [bookedServiceId, setBookedServiceId] = useState(null); // State to store the ID of the booked service
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -34,46 +34,38 @@ const HomePage = () => {
 
   const handleBooking = async (serviceId) => {
     try {
+      // Prepare booking data
+      const bookingData = {
+        service_provider_id: serviceId,
+        customer_id: getUserId(),
+        time_service_provider_booked: new Date(bookingDateTime).toISOString().slice(0, 19).replace('T', ' ')
+      };
 
-        // Prepare booking data
-        const bookingData = {
-            service_provider_id: serviceId,  // Adjust this to get the correct service provider ID
-            customer_id: sessionStorage.getItem('user_id'),  // Replacing customer_id with user_id
-            time_service_provider_booked: new Date(bookingDateTime).toISOString().slice(0, 19).replace('T', ' ')
-        };
+      // Send booking request to the backend
+      const response = await fetch('http://127.0.0.1:5555/add_booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+      });
 
-        // Send booking request to the backend
-        const response = await fetch('http://127.0.0.1:5555/add_booking', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(bookingData)
-        });
+      if (!response.ok) {
+        throw new Error('Failed to create booking');
+      }
 
-        if (!response.ok) {
-            throw new Error('Failed to create booking');
-        }
-        // Handle successful booking
-        console.log('Booking created successfully');
+      // Handle successful booking
+      setBookedServiceId(serviceId); // Set the ID of the booked service
+      console.log('Booking created successfully');
     } catch (error) {
-        console.error('Error creating booking:', error.message);
-        // Handle error
+      console.error('Error creating booking:', error.message);
+      // Handle error
     }
-};
-  const handleRating = (serviceId, rating) => {
-    // Handle rating logic
-    console.log("Rating service with ID:", serviceId, "Rating:", rating);
   };
 
-  const handleReview = (serviceId, review) => {
-    // Handle review logic
-    console.log("Reviewing service with ID:", serviceId, "Review:", review);
-  };
-
-  const handleMessage = (serviceId) => {
-    // Handle message logic
-    console.log("Messaging service provider for service with ID:", serviceId);
+  const handlePayNow = () => {
+    // Handle payment logic here
+    console.log("Payment logic goes here");
   };
 
   const getUserId = () => {
@@ -109,6 +101,12 @@ const HomePage = () => {
                 value={bookingDateTime}
                 onChange={(e) => setBookingDateTime(e.target.value)}
               />
+              {bookedServiceId === service.service_id && (
+                <div className="booking-success-popup">
+                  <p>You have successfully booked the service.</p>
+                  <button onClick={handlePayNow}>Pay Now</button>
+                </div>
+              )}
               <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
               <button onClick={() => handleMessage(service.service_id)}>Message</button>
               <select onChange={(e) => handleRating(service.service_id, e.target.value)}>
@@ -134,3 +132,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
