@@ -9,7 +9,7 @@ const ServicesPage = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://localhost:5555/services");
+        const response = await fetch("http://127.0.0.1:5555/services");
         if (response.ok) {
           const data = await response.json();
           setServices(data);
@@ -44,6 +44,11 @@ const ServicesPage = () => {
     console.log("Reviewing service with ID:", serviceId, "Review:", review);
   };
 
+  const handleMessage = (serviceId) => {
+    // Handle message logic
+    console.log("Messaging service provider for service with ID:", serviceId);
+  };
+
   return (
     <div className="services-page-container">
       <h2>All Services</h2>
@@ -55,6 +60,7 @@ const ServicesPage = () => {
             <p>Category: {service.service_category}</p>
             <p>Posted by: {service.service_provider}</p>
             <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
+            <button onClick={() => handleMessaging(val.service_provider_id)}>Message</button>
             <select onChange={(e) => handleRating(service.service_id, e.target.value)}>
               <option value="">Rate this service</option>
               <option value="1">1</option>
@@ -68,6 +74,7 @@ const ServicesPage = () => {
               placeholder="Leave a review"
               onChange={(e) => handleReview(service.service_id, e.target.value)}
             ></textarea>
+            <button onClick={() => handleMessage(service.service_id)}>Message</button>
           </li>
         ))}
       </ul>

@@ -94,6 +94,9 @@ class Service(db.Model, SerializerMixin):
     service_title = db.Column(db.String(255))
     service_category = db.Column(db.String(255))
     service_provider_id = db.Column(db.Integer, db.ForeignKey('service_providers.id'))
+    hours_available = db.Column(db.String(255))  # Assuming hours available is a string field
+    pricing = db.Column(db.Integer)  # Change the data type to db.Integer for pricing
+    location = db.Column(db.String(255))
     # service_provider = db.relationship('ServiceProvider', backref=db.backref('services', lazy=True))
 
 class Booking(db.Model, SerializerMixin):

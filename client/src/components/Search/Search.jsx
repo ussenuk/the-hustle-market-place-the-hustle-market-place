@@ -7,7 +7,7 @@ function Search() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5555/services')
+    axios.get('http://127.0.0.1:5555/services')
       .then(res => {
         setData(res.data)
         setRecords(res.data);
@@ -53,7 +53,10 @@ function Search() {
               <h3>{val.service_title}</h3>
               <p>{val.service_category}</p>
               <p>{val.service_price}</p>
-              <p>{val.service_provider}</p>
+              <p>Posted by: {val.service_provider}</p>
+              <p>Location: {val.location}</p>
+              <p>Available Hours: {val.hours_available}</p>
+              <p>Pricing: {val.pricing}</p>
               <button onClick={() => handleBooking(val.service_id)}>Book Now</button>
               <button onClick={() => handleMessaging(val.service_provider_id)}>Message</button>
               <select onChange={(e) => handleRating(val.service_id, e.target.value)}>
