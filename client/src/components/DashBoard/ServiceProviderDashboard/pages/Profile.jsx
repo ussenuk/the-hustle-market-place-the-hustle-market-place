@@ -42,6 +42,8 @@ function Profile({user}) {
       .catch(error => console.error('Error fetching service providers:', error));
   }, []);
 
+  console.log('Profile Picture URL:', serviceProviderInfo.profile_picture_url);
+
   return (
     <div className='profile'>
     { Adminchecker ? (
@@ -59,10 +61,10 @@ function Profile({user}) {
       <ProfileHeader/>
         <div className='user--profile'>
         <div className='user--detail'>
-          <img src={userImage} alt="" />
+          <img src={`http://localhost:5555${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
           <h3 className='username'>  {serviceProviderInfo.service_provider}</h3>
           <p><strong>Service Title:</strong> {serviceProviderInfo.service_title}</p>
-          <span className='profession'><strong>Bio</strong> : bio</span>
+          <span className='profession'><strong>Bio</strong> : {serviceProviderInfo.bio}</span>
         </div>
         </div>
       </>) 

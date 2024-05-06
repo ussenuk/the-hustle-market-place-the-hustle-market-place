@@ -59,6 +59,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+    // Clear error message when user starts typing
+    setError("");
   };
 
   const validateForm = () => {
@@ -155,14 +157,28 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           setIsRegistering(false); // Switch to login mode
           setError(""); // Clear any previous errors
           setFormData({ ...formData, password: "" }); // Clear password (and any other sensitive data)
-        } else if (response.data.error) {
-          // Handle errors
-          setError(response.data.error);
         }
       } catch (error) {
-        console.error(error);
-        setError("An error occurred. Please try again.");
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          setError(error.response.data.error);
+        } else {
+          setError("An error occurred. Please try again.");
+        }
       }
+
+
+      //   } else if (response.data.error) {
+      //     // Handle errors
+      //     setError(response.data.error);
+      //   }
+      // } catch (error) {
+      //   console.error(error);
+      //   setError("An error occurred. Please try again.");
+      // }
     } else {
       try {
         const response = await axios.post(
@@ -368,7 +384,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
                 />
 
                 <label htmlFor="work_images">
-                  Choose work images Optional:
+                  Choose work images:
                 </label>
                 <input
                   type="file"
@@ -418,3 +434,4 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
 };
 
 export default BusinessLogin;
+
