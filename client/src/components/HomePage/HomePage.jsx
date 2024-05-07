@@ -9,6 +9,49 @@ const HomePage = () => {
   const [bookingDateTime, setBookingDateTime] = useState("");
   const [bookedServiceId, setBookedServiceId] = useState(null); // State to store the ID of the booked service
 
+  const StarRating = ({ serviceId }) => {
+    const storedRating = Number(localStorage.getItem(serviceId)) || 0;
+    const [rating, setRating] = useState(storedRating);
+    const [hoverRating, setHoverRating] = useState(0);
+
+    useEffect(() => {
+      setRating(storedRating);
+      console.log(`Service ID: ${serviceId}, Rating: ${rating}`);
+    }, [storedRating]);
+
+    const handleMouseOver = (starRating) => {
+      setHoverRating(starRating);
+    };
+
+    const handleMouseLeave = () => {
+      setHoverRating(0);
+    };
+
+    const handleClick = (starRating) => {
+      setRating(starRating);
+      localStorage.setItem(serviceId, starRating); // Store the rating in local storage
+    };
+
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          onMouseOver={() => handleMouseOver(i)}
+          onMouseLeave={handleMouseLeave}
+          onClick={() => handleClick(i)}
+          style={{
+            color: (i <= hoverRating || i <= rating) ? 'gold' : 'gray',
+            cursor: 'pointer'
+          }}
+        >
+          ★
+        </span>
+      );
+    }
+    return <div>{stars}</div>;
+  };
+
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -26,6 +69,9 @@ const HomePage = () => {
     };
 
     fetchServices();
+
+    // Clear local storage on component mount (page load)
+    localStorage.clear();
   }, []);
 
   const handleNavigateHome = () => {
@@ -63,9 +109,31 @@ const HomePage = () => {
     }
   };
 
-  const handlePayNow = () => {
-    // Handle payment logic here
-    console.log("Payment logic goes here");
+  const handleReview = async (serviceId, starsGiven) => {
+    try {
+      const reviewData = {
+        stars_given: starsGiven,
+        booking_id: bookedServiceId, // Assuming bookedServiceId is the booking ID
+        customer_id: getUserId()
+      };
+
+      const response = await fetch('http://127.0.0.1:5555/add_review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reviewData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add review');
+      }
+
+      console.log('Review added successfully');
+    } catch (error) {
+      console.error('Error adding review:', error.message);
+      // Handle error
+    }
   };
 
   const getUserId = () => {
@@ -107,21 +175,14 @@ const HomePage = () => {
                   <button onClick={handlePayNow}>Pay Now</button>
                 </div>
               )}
-              <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
-              <button onClick={() => handleMessage(service.service_id)}>Message</button>
-              <select onChange={(e) => handleRating(service.service_id, e.target.value)}>
-                <option value="">Rate this service</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
+              <StarRating serviceId={service.service_id} />
               <textarea
                 rows="3"
                 placeholder="Leave a review"
                 onChange={(e) => handleReview(service.service_id, e.target.value)}
               ></textarea>
+              <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
+              <button onClick={() => handleMessage(service.service_id)}>Message</button>
             </li>
           ))}
         </ul>
@@ -132,4 +193,10 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
+
+
+
+
 
