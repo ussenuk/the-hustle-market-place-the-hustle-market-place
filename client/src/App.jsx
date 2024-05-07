@@ -100,6 +100,7 @@ const AppContent = () => {
         <Route path="/admin" element={<AdminAccess isLoggedInAdmin={isLoggedInAdmin} setIsLoggedInAdmin={setIsLoggedInAdmin}/>} />
         <Route path="/userlogin" element={<UserLogin />} />
         <Route path="/servicespage" element={<ServicesPage />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin}/>} />
         <Route path="/search" element={<Search />} />

@@ -5,9 +5,10 @@ function Search() {
 
   const [data, setData] = useState([]);
   const [records, setRecords] = useState([]);
+  const [bookingDateTime, setBookingDateTime] = useState("");
 
   useEffect(() => {
-    axios.get('http://localhost:5555/services')
+    axios.get('http://127.0.0.1:5555/services')
       .then(res => {
         setData(res.data)
         setRecords(res.data);
@@ -19,11 +20,35 @@ function Search() {
     setRecords(data.filter(f => f.service_title.toLowerCase().includes(event.target.value.toLowerCase())));
   }
 
-  const handleBooking = (serviceId) => {
-    // Handle booking logic
-    console.log("Booking service with ID:", serviceId);
-  };
+  const handleBooking = async (serviceId) => {
+    try {
 
+        // Prepare booking data
+        const bookingData = {
+            service_provider_id: serviceId,  // Adjust this to get the correct service provider ID
+            customer_id: sessionStorage.getItem('user_id'),  // Replacing customer_id with user_id
+            time_service_provider_booked: new Date(bookingDateTime).toISOString().slice(0, 19).replace('T', ' ')
+        };
+
+        // Send booking request to the backend
+        const response = await fetch('http://127.0.0.1:5555/add_booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bookingData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create booking');
+        }
+        // Handle successful booking
+        console.log('Booking created successfully');
+    } catch (error) {
+        console.error('Error creating booking:', error.message);
+        // Handle error
+    }
+};
   const handleMessaging = (serviceProviderId) => {
     // Handle messaging logic
     console.log("Messaging service provider with ID:", serviceProviderId);
@@ -53,7 +78,15 @@ function Search() {
               <h3>{val.service_title}</h3>
               <p>{val.service_category}</p>
               <p>{val.service_price}</p>
-              <p>{val.service_provider}</p>
+              <p>Posted by: {val.service_provider}</p>
+              <p>Location: {val.location}</p>
+              <p>Available Hours: {val.hours_available}</p>
+              <p>Pricing: {val.pricing}</p>
+              <input
+                type="datetime-local"
+                value={bookingDateTime}
+                onChange={(e) => setBookingDateTime(e.target.value)}
+              />
               <button onClick={() => handleBooking(val.service_id)}>Book Now</button>
               <button onClick={() => handleMessaging(val.service_provider_id)}>Message</button>
               <select onChange={(e) => handleRating(val.service_id, e.target.value)}>
