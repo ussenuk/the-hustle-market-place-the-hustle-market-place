@@ -881,10 +881,7 @@ class Payments(Resource):
                 # Add other fields as needed
             })
 
-        return make_response(jsonify(serialized_payments), 200)    
-
-
-
+        return make_response(jsonify(serialized_payments), 200)
 
 api.add_resource(Services, "/services", endpoint="services")
 
