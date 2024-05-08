@@ -2,45 +2,62 @@
 
 # server/app.py
 
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
-from config import app, db, CORS, api, mail
-from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
+from config import app, db, api, mail
+from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin, Message
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from validators import validate_file, validate_business_description
-from flask_mail import Mail, Message
-from flask_socketio import SocketIO, emit
-import socketio
-
-
-socketIO = SocketIO(app, cors_allowed_origins="*")
-
-@app.route('/http-call')
-def http_call():
-    data={'data':"Text received"}
-    return jsonify(data)
-
-@socketio.on("connect")
-def connected():
-    print(request.sid, "connected")
-    emit("connect", {"data":f"id: {request.sid} is connected"})
-
-@socketio.on("data")
-def handle_data(data):
-    print("Data received:", str(data))
-    emit("data", {"data":data, "id":request.sid}, broadcast=True)
-
-@socketio.on("disconnect")
-def disconnected():
-    print("User disconnected")
-    emit("disconnect", f"user: {request.sid} is disconnected",broadcast=True)
-
+from flask_mail import Mail
+from flask_cors import CORS
 
 
 
 from datetime import datetime
+
+CORS(app)
+
+#messages = Blueprint("messages", __name__, url_prefix="/api")
+
+@app.route('/new_message', methods=['POST'])
+def new_message():
+    data = request.get_json()
+    sender = data.get('sender')
+    receiver = data.get('receiver')
+    content = data.get('content')
+
+    if not all([sender, receiver, content]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    message = Message(sender_id=sender, receiver_id=receiver, content=content)
+    db.session.add(message)
+    db.session.commit()
+
+    return jsonify({'message': 'Message sent successfully'}), 201
+
+@app.route('/messages/inbox/<int:userId>', methods=['GET'])
+def get_inbox(userId):
+    """ user = Customer.query.filter_by(username=sender_name).first() \
+           or ServiceProvider.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404 """
+
+    messages = Message.query.filter((Message.sender_id == userId) | (Message.receiver_id == userId)).all()
+    inbox = [message.as_dict() for message in messages]
+    return jsonify(inbox), 200
+
+@app.route('/messages/all/<sender_id>/<receiver_id>', methods=['GET'])
+def get_messages(sender_id, receiver_id):
+    messages = Message.query.filter(
+        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
+        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
+    ).all()
+
+    messages_data = [message.as_dict() for message in messages]
+    return jsonify(messages_data), 200
 #Sending an email using Flask-Mail
 
 @app.route('/send-email', methods=['POST'])

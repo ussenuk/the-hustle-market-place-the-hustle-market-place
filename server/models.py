@@ -135,3 +135,34 @@ class Payment(db.Model, SerializerMixin):
 
     # booking = db.relationship('Booking', backref=db.backref('payments', lazy=True))
     # customer = db.relationship('User', backref=db.backref('payments', lazy=True))
+
+
+class Message(db.Model, SerializerMixin):
+
+    __tablename__ = "messages"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    #sender_name = db.Column(db.String(255), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    content = db.Column(db.Text, nullable=False)
+    seen = db.Column(db.Boolean, default=False)
+    seen_at = db.Column(db.DateTime(timezone=True))
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=db.func.now())
+
+    serializer_rules = (
+        "-as_dict",
+    )
+
+    def as_dict(self):
+        return {
+            "sender_id": self.sender_id,
+            "receiver_id": self.receiver_id,
+            "content": self.content,
+            "seen": self.seen,
+            "seen_at": self.seen_at,
+            "created_at": self.created_at,
+
+        }
+
+    #user_sender = db.relationship("Customer", backref="sender_messages")
+    #user_receiver = db.relationship("ServiceProvider", backref="receiver_messages")

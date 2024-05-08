@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+/* import {useEffect, useState} from "react";
 import HttpCall from "../HttpCall/HttpCall";
 import {io} from "socket.io-client"
 import WebSocketCall from "../WebSocket/WebSocket";
@@ -70,4 +70,4 @@ function Message() {
   )
 }
 
-export default Message
+export default Message */

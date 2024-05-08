@@ -7,7 +7,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
-from flask_cors import CORS
+#from flask_cors import CORS
 from flask_restful import Api, Resource
 from flask_mail import Mail
 
@@ -16,7 +16,9 @@ from flask_mail import Mail
 
 app = Flask(__name__ , static_url_path='/static')
 api = Api(app)
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+
+
 
 
 
