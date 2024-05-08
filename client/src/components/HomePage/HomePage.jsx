@@ -1,56 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./homepage.css";
+import userImage from '../DashBoard/ServiceProviderDashboard/pages/teacher.png';
+import { Box, Divider } from "@mui/material";
+import ServiceCard from "./ServiceCard";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
   const [bookingDateTime, setBookingDateTime] = useState("");
-  const [bookedServiceId, setBookedServiceId] = useState(null); // State to store the ID of the booked service
-
-  const StarRating = ({ serviceId }) => {
-    const storedRating = Number(localStorage.getItem(serviceId)) || 0;
-    const [rating, setRating] = useState(storedRating);
-    const [hoverRating, setHoverRating] = useState(0);
-
-    useEffect(() => {
-      setRating(storedRating);
-      console.log(`Service ID: ${serviceId}, Rating: ${rating}`);
-    }, [storedRating]);
-
-    const handleMouseOver = (starRating) => {
-      setHoverRating(starRating);
-    };
-
-    const handleMouseLeave = () => {
-      setHoverRating(0);
-    };
-
-    const handleClick = (starRating) => {
-      setRating(starRating);
-      localStorage.setItem(serviceId, starRating); // Store the rating in local storage
-    };
-
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span
-          key={i}
-          onMouseOver={() => handleMouseOver(i)}
-          onMouseLeave={handleMouseLeave}
-          onClick={() => handleClick(i)}
-          style={{
-            color: (i <= hoverRating || i <= rating) ? 'gold' : 'gray',
-            cursor: 'pointer'
-          }}
-        >
-          ★
-        </span>
-      );
-    }
-    return <div>{stars}</div>;
-  };
+  const [bookedServiceId, setBookedServiceId] = useState(null);
+  const [reviewComment, setReviewComment] = useState("");
+  const [rating, setRating] = useState(0); 
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -109,12 +71,13 @@ const HomePage = () => {
     }
   };
 
-  const handleReview = async (serviceId, starsGiven) => {
+  const handleReview = async (serviceId) => {
     try {
       const reviewData = {
-        stars_given: starsGiven,
+        stars_given: rating,
         booking_id: bookedServiceId, // Assuming bookedServiceId is the booking ID
-        customer_id: getUserId()
+        customer_id: getUserId(),
+        comments: reviewComment
       };
 
       const response = await fetch('http://127.0.0.1:5555/add_review', {
@@ -130,6 +93,7 @@ const HomePage = () => {
       }
 
       console.log('Review added successfully');
+      setReviewComment("")
     } catch (error) {
       console.error('Error adding review:', error.message);
       // Handle error
@@ -141,56 +105,42 @@ const HomePage = () => {
     // For example, if you are using session storage:
     return sessionStorage.getItem("user_id");
   };
-
-  return (
-    <div className="homepage">
-      <h1>Welcome to Hutle!</h1>
-      <p>Your trusted platform connecting businesses and consumers seamlessly.</p>
-      <div className="homepage-details">
-        <p>
-          At Hutle, we revolutionize how businesses interact with their customers. Join us to explore endless possibilities, whether you are a business looking to grow or a consumer seeking quality services.
-        </p>
-        <p>Sign Up Now!</p>
+    return (
+      <div className="homepage">
+             <h1>Welcome to Hutle!</h1>
+             <p>Your trusted platform connecting businesses and consumers seamlessly.</p>
+             <div className="homepage-details">
+               <p>
+                 At Hutle, we revolutionize how businesses interact with their customers. Join us to explore endless possibilities, whether you are a business looking to grow or a consumer seeking quality services.
+               </p>
+               <p>Sign Up Now!</p>
+            </div>
+            <div className="services-page-container">
+              <h2>All Services</h2>
+              {error && <div className="error-message">{error}</div>}
+              <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                {services.map((service) => (
+                  <ServiceCard 
+                  key={service.service_id} 
+                  service={service}
+                  handleReview={handleReview}
+                  handleBooking={handleBooking}
+                  bookingDateTime={bookingDateTime}
+                  setBookingDateTime = {setBookingDateTime}
+                  bookedServiceId={bookedServiceId}
+                  setBookedServiceId={setBookedServiceId}
+                  reviewComment={reviewComment}
+                  setReviewComment={setReviewComment}
+                  rating={rating} 
+                setRating={setRating} 
+                  />
+                ))}
+              </Box>
+              </div>
+        
       </div>
-      <div className="services-page-container">
-        <h2>All Services</h2>
-        {error && <div className="error-message">{error}</div>}
-        <ul>
-          {services.map((service) => (
-            <li key={service.service_id}>
-              <h3>{service.service_title}</h3>
-              <p>Category: {service.service_category}</p>
-              <p>Posted by: {service.service_provider}</p>
-              <p>Location: {service.location}</p>
-              <p>Available Hours: {service.hours_available}</p>
-              <p>Pricing: {service.pricing}</p>
-              <input
-                type="datetime-local"
-                value={bookingDateTime}
-                onChange={(e) => setBookingDateTime(e.target.value)}
-              />
-              {bookedServiceId === service.service_id && (
-                <div className="booking-success-popup">
-                  <p>You have successfully booked the service.</p>
-                  <button onClick={handlePayNow}>Pay Now</button>
-                </div>
-              )}
-              <StarRating serviceId={service.service_id} />
-              <textarea
-                rows="3"
-                placeholder="Leave a review"
-                onChange={(e) => handleReview(service.service_id, e.target.value)}
-              ></textarea>
-              <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
-              <button onClick={() => handleMessage(service.service_id)}>Message</button>
-            </li>
-          ))}
-        </ul>
-        <button onClick={handleNavigateHome}>Go to Home</button>
-      </div>
-    </div>
-  );
-};
+    );
+    };
 
 export default HomePage;
 
