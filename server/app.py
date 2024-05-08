@@ -286,6 +286,14 @@ def register_business():
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
     
+     # Check if username already exists
+    if ServiceProvider.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+
+    # Check if email already exists
+    if ServiceProvider.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    
     # Check for missing required file uploads
     required_files = [
         ('profile_picture', profile_picture), ('registration_document', registration_document), 
