@@ -503,8 +503,17 @@ class Services(Resource):
 
         for service in services:
             # Fetch service provider name
+            service_provider = ServiceProvider.query.filter_by(id=service.service_provider_id).first()
             service_provider_name = ServiceProvider.query.filter_by(id=service.service_provider_id).first().fullname
             service_provider_price = ServiceProvider.query.filter_by(id=service.service_provider_id).first().pricing
+            service_provider_bio = ServiceProvider.query.filter_by(id=service.service_provider_id).first().business_description
+            service_provider_work_images_url = None
+            
+            if service_provider.work_images:
+                filename_prefix = service_provider.username
+                work_images_filename = f"{filename_prefix}_work_images.{service_provider.work_images.split('.')[-1]}"
+                service_provider_work_images_url = url_for('static', filename=f'uploads/{work_images_filename}')
+            
 
             serialized_services.append({
                 "service_id": service.id,
@@ -515,6 +524,8 @@ class Services(Resource):
                 "location": service.location,  # Add location field
                 "hours_available": service.hours_available,  # Add hours_available field
                 "pricing": service.pricing,  # Add pricing field
+                "service_provider_bio": service_provider_bio,
+                "work_images_url": service_provider_work_images_url,
                 # Add other fields as needed
             })
 
@@ -683,6 +694,32 @@ def get_bookings_for_service_provider(service_provider_id):
         return jsonify(serialized_bookings), 200
     except Exception as e:
         error_message = f"Failed to fetch bookings: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/add_review', methods=['POST'])
+def add_review():
+    try:
+        data = request.json
+
+        customer_id = data.get('customer_id')
+        booking_id = data.get('booking_id')
+        stars_given = data.get('stars_given')
+        comments = data.get('comments')
+
+        new_review = Review(
+            customer_id = customer_id,
+            booking_id = booking_id,
+            stars_given = stars_given,
+            comments = comments,
+            average_rating = 2,
+        )
+
+        db.session.add(new_review)
+        db.session.commit()
+
+        return jsonify({"message":"Review created successfully"})
+    except Exception as e:
+        error_message = f"Failed to create review:{str(e)}"
         return jsonify({'error': error_message}), 500
 
 class Admins(Resource):
