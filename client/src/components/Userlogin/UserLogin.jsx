@@ -1,5 +1,3 @@
-
-
 // client/src/components/Userlogin/UserLogin.jsx
 
 import React, { useState, useEffect } from "react";
@@ -7,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./userlogin.css";
 
-
 const UserAccess = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,9 +28,8 @@ const UserAccess = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,6 +48,7 @@ const UserAccess = () => {
         // User is logged in
         sessionStorage.setItem("user_id", response.data.user_id);
         setIsLoggedIn(true);
+        setUsername(response.data.username); // Set the username
       } else if (response.data.message && isRegistering) {
         // Registration successful, prompt login
         alert("Registration successful, please log in."); // Optional: Use a more sophisticated notification system
@@ -80,40 +78,75 @@ const UserAccess = () => {
 
   const switchMode = () => {
     setIsRegistering(!isRegistering);
-    setError("");  // Clear error messages when switching modes
+    setError(""); // Clear error messages when switching modes
   };
 
   return (
-    
-            <div className="user-access-container">
-  {isLoggedIn ? (
-    <div>
-      <button onClick={handleLogout}>Logout</button>
+    <div className="user-access-container">
+      {isLoggedIn ? (
+        <div>
+          <p>Welcome, {username}!</p> {/* Display username */}
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      ) : (
+        <div>
+          <h2>{isRegistering ? "Registration" : "Login"}</h2>
+          {error && <div className="error-message">{error}</div>}
+          <form onSubmit={handleSubmit}>
+            {isRegistering && (
+              <>
+                <input
+                  type="text"
+                  name="fullname"
+                  className="input-field"
+                  placeholder="Full Name"
+                  value={formData.fullname}
+                  onChange={handleInputChange}
+                />
+                <input
+                  type="text"
+                  name="username"
+                  className="input-field"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                />
+                <input
+                  type="text"
+                  name="location"
+                  className="input-field"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                />
+              </>
+            )}
+            <input
+              type="email"
+              name="email"
+              className="input-field"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+            <input
+              type="password"
+              name="password"
+              className="input-field"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
+            <button type="submit" className="submit-button">
+              {isRegistering ? "Register" : "Login"}
+            </button>
+          </form>
+          <button onClick={switchMode} className="switch-button">
+            {isRegistering ? "Switch to Login" : "Switch to Registration"}
+          </button>
+        </div>
+      )}
     </div>
-  ) : (
-    <div>
-      <h2>{isRegistering ? "Registration" : "Login"}</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        {isRegistering && (
-          <>
-            <input type="text" name="fullname" className="input-field" placeholder="Full Name" value={formData.fullname} onChange={handleInputChange} />
-            <input type="text" name="username" className="input-field" placeholder="Username" value={formData.username} onChange={handleInputChange} />
-            <input type="text" name="location" className="input-field" placeholder="Location" value={formData.location} onChange={handleInputChange} />
-          </>
-        )}
-        <input type="email" name="email" className="input-field" placeholder="Email" value={formData.email} onChange={handleInputChange} />
-        <input type="password" name="password" className="input-field" placeholder="Password" value={formData.password} onChange={handleInputChange} />
-        <button type="submit" className="submit-button">{isRegistering ? "Register" : "Login"}</button>
-      </form>
-      <button onClick={switchMode} className="switch-button">
-        {isRegistering ? "Switch to Login" : "Switch to Registration"}
-      </button>
-    </div>
-  )}
-</div>
-
-   
   );
 };
 
