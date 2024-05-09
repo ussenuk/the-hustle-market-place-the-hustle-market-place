@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./homepage.css";
+import userImage from '../DashBoard/ServiceProviderDashboard/pages/teacher.png';
+import { Box, Divider } from "@mui/material";
+import ServiceCard from "./ServiceCard";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
   const [bookingDateTime, setBookingDateTime] = useState("");
-  const [bookedServiceId, setBookedServiceId] = useState(null); // State to store the ID of the booked service
+  const [bookedServiceId, setBookedServiceId] = useState(null);
+  const [reviewComment, setReviewComment] = useState("");
+  const [rating, setRating] = useState(0); 
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -26,6 +31,9 @@ const HomePage = () => {
     };
 
     fetchServices();
+
+    // Clear local storage on component mount (page load)
+    localStorage.clear();
   }, []);
 
   const handleNavigateHome = () => {
@@ -63,9 +71,33 @@ const HomePage = () => {
     }
   };
 
-  const handlePayNow = () => {
-    // Handle payment logic here
-    console.log("Payment logic goes here");
+  const handleReview = async (serviceId) => {
+    try {
+      const reviewData = {
+        stars_given: rating,
+        booking_id: bookedServiceId, // Assuming bookedServiceId is the booking ID
+        customer_id: getUserId(),
+        comments: reviewComment
+      };
+
+      const response = await fetch('http://127.0.0.1:5555/add_review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reviewData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add review');
+      }
+
+      console.log('Review added successfully');
+      setReviewComment("")
+    } catch (error) {
+      console.error('Error adding review:', error.message);
+      // Handle error
+    }
   };
 
   const getUserId = () => {
@@ -73,63 +105,48 @@ const HomePage = () => {
     // For example, if you are using session storage:
     return sessionStorage.getItem("user_id");
   };
-
-  return (
-    <div className="homepage">
-      <h1>Welcome to Hutle!</h1>
-      <p>Your trusted platform connecting businesses and consumers seamlessly.</p>
-      <div className="homepage-details">
-        <p>
-          At Hutle, we revolutionize how businesses interact with their customers. Join us to explore endless possibilities, whether you are a business looking to grow or a consumer seeking quality services.
-        </p>
-        <p>Sign Up Now!</p>
+    return (
+      <div className="homepage">
+             <h1>Welcome to Hutle!</h1>
+             <p>Your trusted platform connecting businesses and consumers seamlessly.</p>
+             <div className="homepage-details">
+               <p>
+                 At Hutle, we revolutionize how businesses interact with their customers. Join us to explore endless possibilities, whether you are a business looking to grow or a consumer seeking quality services.
+               </p>
+               <p>Sign Up Now!</p>
+            </div>
+            <div className="services-page-container">
+              <h2>All Services</h2>
+              {error && <div className="error-message">{error}</div>}
+              <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                {services.map((service) => (
+                  <ServiceCard 
+                  key={service.service_id} 
+                  service={service}
+                  handleReview={handleReview}
+                  handleBooking={handleBooking}
+                  bookingDateTime={bookingDateTime}
+                  setBookingDateTime = {setBookingDateTime}
+                  bookedServiceId={bookedServiceId}
+                  setBookedServiceId={setBookedServiceId}
+                  reviewComment={reviewComment}
+                  setReviewComment={setReviewComment}
+                  rating={rating} 
+                setRating={setRating} 
+                  />
+                ))}
+              </Box>
+              </div>
+        
       </div>
-      <div className="services-page-container">
-        <h2>All Services</h2>
-        {error && <div className="error-message">{error}</div>}
-        <ul>
-          {services.map((service) => (
-            <li key={service.service_id}>
-              <h3>{service.service_title}</h3>
-              <p>Category: {service.service_category}</p>
-              <p>Posted by: {service.service_provider}</p>
-              <p>Location: {service.location}</p>
-              <p>Available Hours: {service.hours_available}</p>
-              <p>Pricing: {service.pricing}</p>
-              <input
-                type="datetime-local"
-                value={bookingDateTime}
-                onChange={(e) => setBookingDateTime(e.target.value)}
-              />
-              {bookedServiceId === service.service_id && (
-                <div className="booking-success-popup">
-                  <p>You have successfully booked the service.</p>
-                  <button onClick={handlePayNow}>Pay Now</button>
-                </div>
-              )}
-              <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
-              <button onClick={() => handleMessage(service.service_id)}>Message</button>
-              <select onChange={(e) => handleRating(service.service_id, e.target.value)}>
-                <option value="">Rate this service</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-              <textarea
-                rows="3"
-                placeholder="Leave a review"
-                onChange={(e) => handleReview(service.service_id, e.target.value)}
-              ></textarea>
-            </li>
-          ))}
-        </ul>
-        <button onClick={handleNavigateHome}>Go to Home</button>
-      </div>
-    </div>
-  );
-};
+    );
+    };
 
 export default HomePage;
+
+
+
+
+
+
 

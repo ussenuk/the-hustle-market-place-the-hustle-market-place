@@ -10,6 +10,8 @@ from sqlalchemy_serializer import SerializerMixin
 
 from config import db
 
+from sqlalchemy import UniqueConstraint
+
 from flask_login import UserMixin
 
 
@@ -109,8 +111,7 @@ class Booking(db.Model, SerializerMixin):
     reviews = db.relationship('Review', backref=db.backref('booking', lazy=True))
     payments = db.relationship('Payment', backref=db.backref('booking', lazy=True))
 
-    serialize_rules = ('-user.bookings', '-service_provider.bookings')
-
+    serialize_rules = ('-user.bookings', '-service_provider.bookings') 
 
 class Review(db.Model, SerializerMixin):
     __tablename__ = 'reviews'  # Explicitly specify table name
