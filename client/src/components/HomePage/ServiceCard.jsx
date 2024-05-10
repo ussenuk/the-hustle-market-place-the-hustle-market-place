@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -8,15 +8,20 @@ import {
 } from "@mui/material";
 import { makeStyles } from "@mui/styles"; // Import makeStyles
 import StarRating from "./StarRating";
+import axios from 'axios';
 
 const useStyles = makeStyles(() => ({
   card: {
     width: 500,
-    // backgroundColor: "#242424",
+    backgroundColor: "#f7fee7",
+    // backgroundColor: "#f9f9f9",
     color: "#242424",
     padding:"2rem",
     marginBottom: "1rem", // Adjust spacing as needed
     marginLeft:"1rem",
+    borderColor:"#242424",
+    borderRadius: "8px",
+
     
     "& img": {
       width: "100%",
@@ -24,8 +29,8 @@ const useStyles = makeStyles(() => ({
     },
     "& textarea": {
       width: "100%",
-      marginBottom: "0.5rem", // Adjust spacing as needed
-      padding: "0.5rem",
+      marginBottom: "0.2rem", // Adjust spacing as needed
+      padding: "0.2rem",
       color: "#242424",
       border: "1px solid",
       borderColor:"#242424",
@@ -33,7 +38,7 @@ const useStyles = makeStyles(() => ({
       resize: "none",
       fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
       fontSize: "1rem",
-      lineHeight: "1.5",
+      lineHeight: "1",
       fontWeight: "400"
     }
   },
@@ -79,7 +84,10 @@ const useStyles = makeStyles(() => ({
   label: {
     color: "#3f51b5", 
     fontWeight: "bold",
-    fontSize:"1rem" 
+    fontSize:"0.8rem" 
+  },
+  label2: { 
+    fontSize:"0.8rem" 
   },
   notify: {
     color: "#4CAF50", 
@@ -117,11 +125,46 @@ const ServiceCard = ({
   reviewComment,
   setReviewComment,
   rating, 
-  setRating 
+  setRating,
+  serviceId, 
 }) => {
   const classes = useStyles();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [averageRating, setAverageRating] = useState(null); // State to store average rating
+  const [randomComment, setRandomComment] = useState(""); // State to store random comment
+
+
+  useEffect(() => {
+    // Fetch average rating when component mounts
+    fetchAverageRating();
+    fetchRandomComment();
+  }, []); // Run this effect only once when component mounts
+
+  const fetchAverageRating = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5555/get_reviews_with_average_rating`);
+      console.log("API Response:", response.data);
   
+      const bookingRatings = response.data;
+      const serviceAverageRating = bookingRatings[serviceId]?.average_rating; // Extract average rating for the current service
+      console.log("Service Average Rating:", serviceAverageRating);
+      setAverageRating(serviceAverageRating);
+    } catch (error) {
+      console.error("Error fetching average rating:", error);
+    }
+  };
+
+  const fetchRandomComment = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5555/get_random_comment/${serviceId}`);
+      console.log("Random Comment API Response:", response.data);
+  
+      const randomCommentData = response.data;
+      setRandomComment(randomCommentData.random_comment);
+    } catch (error) {
+      console.error("Error fetching random comment:", error);
+    }
+  };
 
   const handleBookService = async () => {
     await handleBooking(service.service_id);
@@ -132,6 +175,24 @@ const ServiceCard = ({
     setRating(newRating); // Update the rating state when it changes
   };
 
+  const renderStarRating = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          style={{
+            color: (i <= averageRating) ? 'gold' : 'gray',
+            cursor: 'pointer'
+          }}
+        >
+          ★
+        </span>
+      );
+    }
+    return stars;
+  };
+
   return (
     <Card className={classes.card}>
       <CardContent>
@@ -140,34 +201,42 @@ const ServiceCard = ({
           {service.service_title}
         </h3>
         <Typography  align="justify">
-          <span  className={classes.label}>Category:</span> {service.service_category}
+          <span  className={classes.label}>Category:</span> <span  className={classes.label2}>{service.service_category}</span>
         </Typography>
         <Typography align="justify">
-          <span className={classes.label}>Posted by:</span> {service.service_provider}
+          <span className={classes.label}>Posted by:</span> <span  className={classes.label2}>{service.service_provider}</span> 
         </Typography>
         <Typography align="justify">
-          <span className={classes.label}>Location:</span> {service.location}
+          <span className={classes.label}>Location:</span> <span  className={classes.label2}>{service.location}</span>
         </Typography>
         <Typography align="justify">
-          <span className={classes.label}>Description:</span> {service.service_provider_bio}
+          <span className={classes.label}>Description:</span> <span  className={classes.label2}>{service.service_provider_bio}</span>
         </Typography>
         <Typography align="justify">
-          <span className={classes.label}>Available Hours:</span> {service.hours_available}
+          <span className={classes.label}>Available Hours:</span> <span  className={classes.label2}>{service.hours_available}</span>
         </Typography>
         <Typography align="justify">
-        <span className={classes.label}>Pricing:</span> {service.pricing}</Typography>
+        <span className={classes.label}>Pricing:</span> <span  className={classes.label2}>{service.pricing}</span></Typography>
+        <Typography align="justify">
+          <span className={classes.label}>Average Rating of this service:</span>{" "}
+          <span className={classes.label2}>{renderStarRating()}</span>
+        </Typography>
         <input
           type="datetime-local"
           value={bookingDateTime}
           onChange={(e) => setBookingDateTime(e.target.value)}
         />
         <StarRating serviceId={service.service_id} onRatingChange={handleRatingChange} initialRating={rating}/>
+        
         <textarea
           rows="3"
-          placeholder="Leave a review"
+          placeholder="Rate and Leave a review"
           value={reviewComment}
           onChange={(e) => setReviewComment(e.target.value)}
         ></textarea>
+      <Typography align="justify">
+        <span className={classes.label}>Random Comment:</span> <span  className={classes.label2}>{randomComment}</span>
+      </Typography>
       </CardContent>
       <CardActions>
         <CustomButton
@@ -185,7 +254,7 @@ const ServiceCard = ({
           </div>
         )}
         <CustomButton
-          onClick={() => handleReview(service.service_id)}
+          onClick={() => handleReview(serviceId)}
            
         >
           Review
@@ -201,3 +270,4 @@ const ServiceCard = ({
 };
 
 export default ServiceCard;
+
