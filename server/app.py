@@ -82,7 +82,12 @@ def get_messages(sender_id, receiver_id):
 
     messages_data = [{**message.as_dict(), 'sender_name': get_user_name(message.sender_id)} for message in messages]
     return jsonify(messages_data), 200
+from flask_cors import CORS
+
 #Sending an email using Flask-Mail
+
+from sqlalchemy import func
+import random
 
 @app.route('/send-email', methods=['POST'])
 def send_email():
@@ -98,6 +103,7 @@ def send_email():
     message.body = message_body
     mail.send(message)
     return 'Email sent!'
+
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -139,6 +145,10 @@ class Home(Resource):
             })
 
 api.add_resource(Home, '/')
+
+# Flask route to get the logged-in user's name
+# Flask route to get the logged-in user's name
+
 
 
 # @app.route('/admindashboard')
@@ -191,6 +201,7 @@ def logout_admin_route():
         session.pop('admin_id')
     return jsonify({'message': 'Logout successful'}), 200
 
+
 # User Registration
 @app.route('/userregister', methods=['POST'])
 def register_user():
@@ -201,9 +212,11 @@ def register_user():
     password = data.get('password')
     location = data.get('location')
 
-    if not fullname or not username or not email or not password or not location:
-        return jsonify({'error': 'Missing required fields'}), 400
+    # Validate compulsory fields
+    if not all([fullname, username, email, password, location]):
+        return jsonify({'error': 'Please fill all the required fields.'}), 400
 
+    # Check for unique email and username
     if Customer.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already in use'}), 409
     if Customer.query.filter_by(username=username).first():
@@ -227,9 +240,25 @@ def login_user_route():
     user = Customer.query.filter_by(email=email).first()
     if user and user.check_password(password):
         session['user_id'] = user.id
-        # login_user(user)
-        return jsonify({'message': 'Logged in successfully', 'user_id': user.id}), 200
+        return jsonify({'message': 'Logged in successfully', 'user_id': user.id, 'username': user.username}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
+
+
+@app.route('/get_user_name', methods=['GET'])
+def get_user_name():
+    # Check if user is logged in
+    if 'user_id' in session:
+        user_id = session['user_id']
+        # Fetch the user from the database
+        user = Customer.query.get(user_id)
+        if user:
+            # Return the user's full name
+            return jsonify({'user_name': user.fullname}), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
 
 
 # User Logout
@@ -277,6 +306,16 @@ def search_services():
 
     return jsonify(serialized_services), 200
 
+@app.route('/search_service_name/<int:service_id>', methods=['GET'])
+def search_service_name(service_id):
+    # Query the service based on the service_id
+    service = Service.query.filter_by(id=service_id).first()
+
+    if not service:
+        return jsonify({'error': 'Service not found'}), 404
+
+    # Return the service name
+    return jsonify({'service_name': service.service_title}), 200
 
 """ @app.route('/search_services', methods=['POST'])
 def search_services():
@@ -355,6 +394,14 @@ def register_business():
             ('hours_available', hours_available), ('location', location), ('business_description', business_description)
         ] if not value])
         return jsonify({'error': f'Missing required fields: {missing}'}), 400
+    
+     # Check if username already exists
+    if ServiceProvider.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+
+    # Check if email already exists
+    if ServiceProvider.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
     
     # Check for missing required file uploads
     required_files = [
@@ -436,6 +483,19 @@ def register_business():
     db.session.commit()
 
     return jsonify({'message': 'Registration successful'}), 201
+# Service Provider Name Retrieval
+@app.route('/service_provider_name/<int:service_id>', methods=['GET'])
+def get_service_provider_name(service_id):
+    # Query the service provider associated with the given service ID
+    service = Service.query.filter_by(id=service_id).first()
+    if not service:
+        return jsonify({'error': 'Service not found'}), 404
+    
+    service_provider = ServiceProvider.query.filter_by(id=service.service_provider_id).first()
+    if not service_provider:
+        return jsonify({'error': 'Service provider not found'}), 404
+    
+    return jsonify({'service_provider_name': service_provider.fullname}), 200
 
 
 # Service Provider Login
@@ -573,8 +633,17 @@ class Services(Resource):
 
         for service in services:
             # Fetch service provider name
+            service_provider = ServiceProvider.query.filter_by(id=service.service_provider_id).first()
             service_provider_name = ServiceProvider.query.filter_by(id=service.service_provider_id).first().fullname
             service_provider_price = ServiceProvider.query.filter_by(id=service.service_provider_id).first().pricing
+            service_provider_bio = ServiceProvider.query.filter_by(id=service.service_provider_id).first().business_description
+            service_provider_work_images_url = None
+            
+            if service_provider.work_images:
+                filename_prefix = service_provider.username
+                work_images_filename = f"{filename_prefix}_work_images.{service_provider.work_images.split('.')[-1]}"
+                service_provider_work_images_url = url_for('static', filename=f'uploads/{work_images_filename}')
+            
 
             serialized_services.append({
                 "service_id": service.id,
@@ -585,6 +654,8 @@ class Services(Resource):
                 "location": service.location,  # Add location field
                 "hours_available": service.hours_available,  # Add hours_available field
                 "pricing": service.pricing,  # Add pricing field
+                "service_provider_bio": service_provider_bio,
+                "work_images_url": service_provider_work_images_url,
                 # Add other fields as needed
             })
 
@@ -753,6 +824,112 @@ def get_bookings_for_service_provider(service_provider_id):
         return jsonify(serialized_bookings), 200
     except Exception as e:
         error_message = f"Failed to fetch bookings: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/add_review', methods=['POST'])
+def add_review():
+    try:
+        data = request.json
+
+        customer_id = data.get('customer_id')
+        booking_id = data.get('booking_id')
+        stars_given = data.get('stars_given')
+        comments = data.get('comments')
+
+        new_review = Review(
+            customer_id = customer_id,
+            booking_id = booking_id,
+            stars_given = stars_given,
+            comments = comments,
+            # average_rating = 2,
+        )
+
+        db.session.add(new_review)
+        db.session.commit()
+
+        return jsonify({"message":"Review created successfully"})
+    except Exception as e:
+        error_message = f"Failed to create review:{str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/reviews/<int:booking_id>', methods=['GET'])
+def get_reviews_by_service_provider(booking_id):
+    try:
+        reviews = Review.query.filter_by(booking_id=booking_id).all()
+        if not reviews:
+            return jsonify({'message': 'No reviews found for this service provider'}), 404
+
+        # Serialize reviews data
+        # customer_name = Customer.query.filter_by(id=Review.customer_id).first().fullname
+           
+        serialized_reviews = [{
+            'review_id': review.id,
+            'customer': review.customer_id,  # Assuming there's a 'name' attribute in the customer model
+            'stars_given': review.stars_given,
+            'comments': review.comments
+        } for review in reviews]
+
+        return jsonify(serialized_reviews)
+    except Exception as e:
+        error_message = f"Failed to get reviews: {str(e)}"
+        return jsonify({'error': error_message}), 500   
+
+
+@app.route('/get_reviews_with_average_rating', methods=['GET'])
+def get_reviews_with_average_rating():
+    try:
+        # Fetch all reviews where stars_given is not NULL and booking_id is not NULL
+        reviews = Review.query.filter(Review.stars_given.isnot(None), Review.booking_id.isnot(None)).all()
+
+        # Dictionary to store sum of stars given and count of reviews for each booking ID
+        booking_ratings = {}
+
+        # Calculate sum of stars given and count of reviews for each booking ID
+        for review in reviews:
+            booking_id = review.booking_id
+            stars_given = review.stars_given
+
+            if booking_id not in booking_ratings:
+                # If booking ID not seen before, initialize sum and count
+                booking_ratings[booking_id] = {'sum': 0, 'count': 0}
+
+            # Increment sum and count
+            booking_ratings[booking_id]['sum'] += stars_given
+            booking_ratings[booking_id]['count'] += 1
+
+        # Calculate average rating for each booking ID
+        for booking_id, rating_data in booking_ratings.items():
+            average_rating = rating_data['sum'] / rating_data['count']
+            rating_data['average_rating'] = average_rating
+
+        return jsonify(booking_ratings)
+    except Exception as e:
+        error_message = f"Failed to get reviews with average rating: {str(e)}"
+        return jsonify({'error': error_message}), 500
+    
+
+
+@app.route('/get_random_comment/<int:booking_id>', methods=['GET'])
+def get_random_comment(booking_id):
+    try:
+        # Fetch all reviews for the given booking_id
+        reviews = Review.query.filter_by(booking_id=booking_id).all()
+
+        if not reviews:
+            return jsonify({'error': 'No reviews found for the given booking ID'}), 404
+
+        # Select a random review from the list
+        random_review = random.choice(reviews)
+
+        # Construct response
+        response = {
+            'booking_id': random_review.booking_id,
+            'random_comment': random_review.comments
+        }
+
+        return jsonify(response)
+    except Exception as e:
+        error_message = f"Failed to get random comment: {str(e)}"
         return jsonify({'error': error_message}), 500
 
 class Admins(Resource):
@@ -953,19 +1130,82 @@ class Payments(Resource):
 
         return make_response(jsonify(serialized_payments), 200)
 
+@app.route('/savepayment', methods=['POST'])
+def save_payment():
+    # Get the payment details from the request
+    payment_data = request.json
+
+    # Create a new Payment object with the received data
+    payment = Payment(
+        
+        payment_status=payment_data.get('payment').get('status'),
+        payment_option=payment_data.get('payment').get('option'),
+        booking_id=payment_data.get('payment').get('booking_id'),
+        customer_id=payment_data.get('customer_id')
+        # Add more fields as needed
+    )
+
+    # Add the Payment object to the database session
+    db.session.add(payment)
+
+    try:
+        # Commit the session to save the payment details to the database
+        db.session.commit()
+        return jsonify({'message': 'Payment details saved successfully'}), 201
+    except Exception as e:
+        # Rollback the session in case of error
+        db.session.rollback()
+        return jsonify({'error': 'Failed to save payment details', 'details': str(e)}), 500
+class LoggedInUsername(Resource):
+    def get(self):
+        # Check if the user is logged in
+        if current_user.is_authenticated:
+            print (f'{current_user.username}')
+            # Return the username of the logged-in user
+            return jsonify({'username': current_user.username}), 200
+        else:
+            return jsonify({'error': 'User not logged in'}), 401
+class Users(Resource):
+    def get(self):
+        users = Customer.query.all()
+        serialized_user = []
+
+        for user in users:
+
+            # Fetch service provider name
+            user_id = user.id
+            user_username = user.username
+            user_name = user.fullname
+            
+
+            
+
+            
+            serialized_user.append({
+                "id": user_id,
+                "user": user_name,
+                
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_user), 200)
+
+
+
+
+
+
+
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
 
 api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
-
 api.add_resource(Admins, "/admin", endpoint="admin")
-
 api.add_resource(AllUsers, "/users", endpoint="users")
-
 api.add_resource(AllUser, "/user/<int:user_id>/<string:user_type>", endpoint="user")
-
 api.add_resource(Payments, "/payments", endpoint="payments")
+api.add_resource(Users, "/user_name", endpoint="user_name")
 
 
 if __name__ == '__main__':

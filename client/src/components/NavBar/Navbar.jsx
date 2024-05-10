@@ -34,6 +34,7 @@ const Navigation = () => {
       <Link to="/about">About Us</Link>
       <Link to="/businesslogin">Business Login/Register</Link>
       <Link to="/userlogin">Login/Logout</Link>
+      
       <Link to="/inbox">Inbox{unreadMessageCount > 0 && `(${unreadMessageCount})`}</Link>
     </div>
   );
