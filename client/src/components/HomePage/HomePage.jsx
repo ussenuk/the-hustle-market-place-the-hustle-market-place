@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "./homepage.css";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './homepage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
-  const [error, setError] = useState("");
-  const [bookingDateTime, setBookingDateTime] = useState("");
-  const [bookedServiceId, setBookedServiceId] = useState(null); // State to store the ID of the booked service
+  const [error, setError] = useState('');
+  const [bookingDateTime, setBookingDateTime] = useState('');
+  const [bookedServiceId, setBookedServiceId] = useState(null);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5555/services");
+        const response = await fetch('http://127.0.0.1:5555/services');
         if (response.ok) {
           const data = await response.json();
           setServices(data);
         } else {
-          throw new Error("Failed to fetch services");
+          throw new Error('Failed to fetch services');
         }
       } catch (error) {
-        console.error("Error fetching services:", error);
-        setError("Failed to fetch services. Please try again.");
+        console.error('Error fetching services:', error);
+        setError('Failed to fetch services. Please try again.');
       }
     };
 
@@ -29,49 +29,43 @@ const HomePage = () => {
   }, []);
 
   const handleNavigateHome = () => {
-    navigate("/");
+    navigate('/');
   };
 
   const handleBooking = async (serviceId) => {
     try {
-      // Prepare booking data
       const bookingData = {
         service_provider_id: serviceId,
         customer_id: getUserId(),
-        time_service_provider_booked: new Date(bookingDateTime).toISOString().slice(0, 19).replace('T', ' ')
+        time_service_provider_booked: new Date(bookingDateTime).toISOString().slice(0, 19).replace('T', ' '),
       };
 
-      // Send booking request to the backend
       const response = await fetch('http://127.0.0.1:5555/add_booking', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(bookingData)
+        body: JSON.stringify(bookingData),
       });
 
       if (!response.ok) {
         throw new Error('Failed to create booking');
       }
 
-      // Handle successful booking
-      setBookedServiceId(serviceId); // Set the ID of the booked service
+      setBookedServiceId(serviceId);
       console.log('Booking created successfully');
     } catch (error) {
       console.error('Error creating booking:', error.message);
-      // Handle error
     }
   };
 
-  const handlePayNow = () => {
-    // Handle payment logic here
-    console.log("Payment logic goes here");
+  const handlePayNow = (serviceId, price) => {
+    // Navigate to the payment page with serviceId and price as parameters
+    navigate(`/payment?serviceId=${serviceId}&price=${price}`);
   };
 
   const getUserId = () => {
-    // Replace this with your function to get the user ID
-    // For example, if you are using session storage:
-    return sessionStorage.getItem("user_id");
+    return sessionStorage.getItem('user_id');
   };
 
   return (
@@ -101,27 +95,11 @@ const HomePage = () => {
                 value={bookingDateTime}
                 onChange={(e) => setBookingDateTime(e.target.value)}
               />
-              {bookedServiceId === service.service_id && (
-                <div className="booking-success-popup">
-                  <p>You have successfully booked the service.</p>
-                  <button onClick={handlePayNow}>Pay Now</button>
-                </div>
-              )}
+              <div className="booking-success-popup">
+                {bookedServiceId === service.service_id && <p>Booking successful!</p>}
+              </div>
               <button onClick={() => handleBooking(service.service_id)}>Book Now</button>
-              <button onClick={() => handleMessage(service.service_id)}>Message</button>
-              <select onChange={(e) => handleRating(service.service_id, e.target.value)}>
-                <option value="">Rate this service</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-              <textarea
-                rows="3"
-                placeholder="Leave a review"
-                onChange={(e) => handleReview(service.service_id, e.target.value)}
-              ></textarea>
+              <button onClick={() => handlePayNow(service.service_id, service.pricing)}>Pay Now</button>
             </li>
           ))}
         </ul>
@@ -132,4 +110,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-

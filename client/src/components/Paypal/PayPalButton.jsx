@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import jsPDF from 'jspdf';
 
 const PayPalButton = () => {
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const [userName, setUserName] = useState('');
 
   const handlePaymentSuccess = (details) => {
     console.log('Payment successful', details);
@@ -36,10 +37,7 @@ const PayPalButton = () => {
           name: details.payer.name.given_name + ' ' + details.payer.name.surname,
           email: details.payer.email_address,
           payer_id: details.payer.payer_id
-
         },
-        
-
         purchase_units: [{
           amount: {
             value: details.purchase_units[0].amount.value,
@@ -66,12 +64,29 @@ const PayPalButton = () => {
     }).then(data => {
       // Handle successful response
       console.log('Payment details saved successfully:', data);
+      
+      // Fetch user name after payment is done
+      fetchUserName();
     }).catch(error => {
       // Handle error
       console.error('Error saving payment details:', error);
     });
   };
   
+  const fetchUserName = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5555/get_logged_in_username/${userName}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserName(data.username);
+      } else {
+        throw new Error('Failed to fetch user name');
+      }
+    } catch (error) {
+      console.error('Error fetching user name:', error);
+      // Handle error if needed
+    }
+  };
 
   const downloadPaymentDetailsPDF = (paymentDetails) => {
     const doc = new jsPDF();
@@ -125,14 +140,14 @@ const PayPalButton = () => {
           <h2>Payment Details</h2>
           <p>ID: {paymentDetails.id}</p>
           <p>Intent: {paymentDetails.intent}</p>
-          <p>Amount: {paymentDetails.purchase_units[0].amount.value} {paymentDetails.purchase_units[0].amount.currency_code}</p>
+          {/*<p>Amount: {paymentDetails.purchase_units[0].amount.value} {paymentDetails.purchase_units[0].amount.currency_code}</p>*/}
           <p>Status: {paymentDetails.status}</p>
           <p>Creation Time: {paymentDetails.create_time}</p>
           <p>Update Time: {paymentDetails.update_time}</p>
-          <p>Payer Name: {paymentDetails.payer.name.given_name} {paymentDetails.payer.name.surname}</p>
-          <p>Payer Email: {paymentDetails.payer.email_address}</p>
+          
           <p>Payer ID: {paymentDetails.payer.payer_id}</p>
           {/* Render more details as needed */}
+          <p>Thankyou, {userName} your payment is complete</p>
         </div>
       )}
     </div>

@@ -129,6 +129,7 @@ import DashBoard from './components/DashBoard/ServiceProviderDashboard/DashBoard
 import Search from "./components/Search/Search";
 import AdminAccess from "./components/Admin/Admin";
 import PayPalButton from "./components/Paypal/PayPalButton";
+import PaymentPage from './components/PaymentPage/PaymentPage';
 import axios from "axios";
 
 const App = () => {
@@ -210,6 +211,7 @@ const AppContent = () => {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/admin" element={<AdminAccess isLoggedInAdmin={isLoggedInAdmin} setIsLoggedInAdmin={setIsLoggedInAdmin}/>} />
         <Route path="/userlogin" element={<UserLogin />} />
