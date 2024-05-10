@@ -121,10 +121,10 @@ with app.app_context():
 
 
     #Add sample messages
-    message1 = Message(sender_id=1, receiver_id=2, content="Hello, I want to book a service. Can you help me?")
-    message2 = Message(sender_id=2, receiver_id=1, content="Sure, I'll get back to you as soon as possible.")
-    message3 = Message(sender_id=1, receiver_id=2, content="Thank you for your time. I'll be in touch soon.")
-    message4 = Message(sender_id=2, receiver_id=1, content="Great! I'll be in touch soon to schedule the service.")
+    message1 = Message(sender_id=1, sender_name="John Doe", receiver_id=2, content="Hello, I want to book a service. Can you help me?")
+    message2 = Message(sender_id=2, sender_name="Jane Smith", receiver_id=1, content="Sure, I'll get back to you as soon as possible.")
+    message3 = Message(sender_id=1, sender_name="John Doe", receiver_id=2, content="Thank you for your time. I'll be in touch soon.")
+    message4 = Message(sender_id=2, sender_name="Jane Smith", receiver_id=1, content="Great! I'll be in touch soon to schedule the service.")
 
     # Add messages to session and commit
     db.session.add_all([message1, message2, message3, message4])

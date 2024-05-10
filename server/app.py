@@ -21,17 +21,35 @@ CORS(app)
 
 #messages = Blueprint("messages", __name__, url_prefix="/api")
 
+
+def get_user_name(user_id):
+    user = Customer.query.get(user_id)
+    if user:
+        return user.get_name()
+    user = ServiceProvider.query.get(user_id)
+    if user:
+        return user.get_name()
+    return None  # Indicate user not found
+
+
+def get_other_user_name(sender_id, user_type):
+    if user_type == "customer":
+        return ServiceProvider.query.get(sender_id).get_name()  # Assuming get_name() exists in ServiceProvider model
+    else:
+        return Customer.query.get(sender_id).get_name() 
+    
 @app.route('/new_message', methods=['POST'])
 def new_message():
     data = request.get_json()
     sender = data.get('sender')
     receiver = data.get('receiver')
     content = data.get('content')
+    sender_name = data.get('sender_name')
 
-    if not all([sender, receiver, content]):
+    if not all([sender, receiver, content, sender_name]):
         return jsonify({'error': 'Missing required fields'}), 400
 
-    message = Message(sender_id=sender, receiver_id=receiver, content=content)
+    message = Message(sender_id=sender, receiver_id=receiver, content=content, sender_name=sender)
     db.session.add(message)
     db.session.commit()
 
@@ -39,24 +57,30 @@ def new_message():
 
 @app.route('/messages/inbox/<int:userId>', methods=['GET'])
 def get_inbox(userId):
-    """ user = Customer.query.filter_by(username=sender_name).first() \
-           or ServiceProvider.query.filter_by(username=username).first()
+    user = None
+    if Customer.query.filter_by(id=userId).first():
+        user = Customer.query.filter_by(id=userId).first()
+    elif ServiceProvider.query.filter_by(id=userId).first():
+        user = ServiceProvider.query.filter_by(id=userId).first()
 
     if not user:
-        return jsonify({'error': 'User not found'}), 404 """
+        return jsonify({'error': 'User not found'}), 404
 
     messages = Message.query.filter((Message.sender_id == userId) | (Message.receiver_id == userId)).all()
-    inbox = [message.as_dict() for message in messages]
+    inbox = [
+    {**message.as_dict(), 'sender_name': user.get_name() if message.sender_id == userId else get_other_user_name(message.sender_id, user.user_type)}
+    for message in messages
+]
     return jsonify(inbox), 200
 
 @app.route('/messages/all/<sender_id>/<receiver_id>', methods=['GET'])
 def get_messages(sender_id, receiver_id):
     messages = Message.query.filter(
         ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
-        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
+        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id)) 
     ).all()
 
-    messages_data = [message.as_dict() for message in messages]
+    messages_data = [{**message.as_dict(), 'sender_name': get_user_name(message.sender_id)} for message in messages]
     return jsonify(messages_data), 200
 #Sending an email using Flask-Mail
 

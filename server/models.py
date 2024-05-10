@@ -54,6 +54,9 @@ class Customer(db.Model, SerializerMixin, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def get_name(self):
+        return self.username
+    
     # def _repr_(self):
     #     return f'<Customer {self.username}>'
 
@@ -89,6 +92,9 @@ class ServiceProvider(db.Model, SerializerMixin, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def get_name(self):
+        return self.username
 
 class Service(db.Model, SerializerMixin):
     __tablename__ = 'services'  # Explicitly specify table name
@@ -142,7 +148,7 @@ class Message(db.Model, SerializerMixin):
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    #sender_name = db.Column(db.String(255), nullable=False)
+    sender_name = db.Column(db.String(255))
     receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     content = db.Column(db.Text, nullable=False)
     seen = db.Column(db.Boolean, default=False)
@@ -156,6 +162,7 @@ class Message(db.Model, SerializerMixin):
     def as_dict(self):
         return {
             "sender_id": self.sender_id,
+            "sender_name": self.sender_name,
             "receiver_id": self.receiver_id,
             "content": self.content,
             "seen": self.seen,

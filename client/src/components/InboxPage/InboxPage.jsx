@@ -79,6 +79,7 @@ function InboxPage() {
         <h2>Inbox</h2>
         {messages &&messages.map((message) => (
           <div key={message.id}>
+            <p>From: {message.sender_name}</p>
             <p>To: {message.receiver_id}</p>
             <p>Message: {message.content}</p>
           </div>

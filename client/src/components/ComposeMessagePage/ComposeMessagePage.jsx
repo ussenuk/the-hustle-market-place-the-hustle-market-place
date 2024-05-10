@@ -1,18 +1,41 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 
 
 const ComposeMessagePage = () => {
+  
+  const [userProf, setUserProf] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchUserProf = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5555/users`);
+        setUserProf(response.data.username);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setIsLoading(false); // Set loading to false after fetching (success or failure)
+      }
+    };
+    fetchUserProf();
+  }, []);
 
   const pathParams = useParams();
 
   const senderId = sessionStorage.getItem("user_id");
+  //const sender_name = userProf ? userProf.find(user => user.id === senderId)?.name : '';
+  const sender_name = userProf && senderId
+    ? userProf.find(user => user.id === parseInt(senderId))?.username
+    : '';
   const receiverId = pathParams['receiverId'];
   console.log("receiverId: ", receiverId,
-    "senderId:", senderId
+    "senderId:", senderId,
+    "sender_name:", sender_name
   );
+
 
 
   const [content, setContent] = useState('');
@@ -33,9 +56,15 @@ const ComposeMessagePage = () => {
       return;
     }
 
+    if (!sender_name) {
+      console.error('Null pointer exception: content is null');
+      return;
+    }
+
     try {
       await axios.post(`http://localhost:5555/new_message`, {
         sender: senderId,
+        sender_name: sender_name,
         receiver: receiverId,
         content: content
       });
@@ -60,6 +89,11 @@ const ComposeMessagePage = () => {
       console.error(error.config);
     }
   };
+
+  if (isLoading || userProf === null) {
+    return <div>Loading...</div>;
+  }
+
 
 
   return (
