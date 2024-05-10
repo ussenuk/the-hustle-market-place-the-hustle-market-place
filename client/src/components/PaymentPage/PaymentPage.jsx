@@ -11,6 +11,9 @@ const PaymentPage = () => {
   const [serviceName, setServiceName] = useState('');
   const [serviceProviderName, setServiceProviderName] = useState('');
   const [userName, setUserName] = useState('');
+  
+  
+  const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -33,14 +36,7 @@ const PaymentPage = () => {
           throw new Error('Failed to fetch service provider name');
         }
 
-        // Fetch user name
-        const userResponse = await fetch(`http://127.0.0.1:5555/get_logged_in_username/${userName}`);
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUserName(userData.user_name);
-        } else {
-          throw new Error('Failed to fetch user name');
-        }
+        
       } catch (error) {
         console.error('Error fetching data:', error);
         // Handle error if needed
@@ -50,9 +46,30 @@ const PaymentPage = () => {
     fetchUserData();
   }, [serviceId]);
 
+  useEffect(() => {
+    const userId = sessionStorage.getItem("user_id");
+    // Retrieve value from Session storage
+    
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/user_name")
+      .then((response) => response.json())
+      .then((data) => {
+        // Find service provider with matching ID
+        const User = data.find(
+          (provider) => provider.id === parseInt(userId)
+        );
+        if (User) {
+          setUserInfo(User);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching service providers:", error)
+      );
+  }, []);
+
   return (
     <div className="payment-page-container">
-      <p>Welcome, {userName} you can now proceed with your payment</p>
+      <p>Welcome {userInfo.user}, you can now proceed with your payment.</p>
       <p>Pay for Service: {serviceName}</p>
       <p className="service-provider-info">Service provided by: {serviceProviderName}</p>
       <div className="payment-details-container">

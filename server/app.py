@@ -1090,14 +1090,42 @@ class LoggedInUsername(Resource):
     def get(self):
         # Check if the user is logged in
         if current_user.is_authenticated:
+            print (f'{current_user.username}')
             # Return the username of the logged-in user
             return jsonify({'username': current_user.username}), 200
         else:
             return jsonify({'error': 'User not logged in'}), 401
+class Users(Resource):
+    def get(self):
+        users = Customer.query.all()
+        serialized_user = []
+
+        for user in users:
+
+            # Fetch service provider name
+            user_id = user.id
+            user_username = user.username
+            user_name = user.fullname
+            
+
+            
+
+            
+            serialized_user.append({
+                "id": user_id,
+                "user": user_name,
+                
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_user), 200)
 
 
 
-api.add_resource(LoggedInUsername, '/get_logged_in_username')
+
+
+
+
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
@@ -1107,9 +1135,7 @@ api.add_resource(Admins, "/admin", endpoint="admin")
 api.add_resource(AllUsers, "/users", endpoint="users")
 api.add_resource(AllUser, "/user/<int:user_id>/<string:user_type>", endpoint="user")
 api.add_resource(Payments, "/payments", endpoint="payments")
-
-
-
+api.add_resource(Users, "/user_name", endpoint="user_name")
 
 
 if __name__ == '__main__':
