@@ -14,6 +14,9 @@ from flask_mail import Mail, Message
 from datetime import datetime
 #Sending an email using Flask-Mail
 
+from sqlalchemy import func
+import random
+
 @app.route('/send-email', methods=['POST'])
 def send_email():
     data = request.json
@@ -719,7 +722,7 @@ def add_review():
             booking_id = booking_id,
             stars_given = stars_given,
             comments = comments,
-            average_rating = 2,
+            # average_rating = 2,
         )
 
         db.session.add(new_review)
@@ -728,6 +731,86 @@ def add_review():
         return jsonify({"message":"Review created successfully"})
     except Exception as e:
         error_message = f"Failed to create review:{str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/reviews/<int:booking_id>', methods=['GET'])
+def get_reviews_by_service_provider(booking_id):
+    try:
+        reviews = Review.query.filter_by(booking_id=booking_id).all()
+        if not reviews:
+            return jsonify({'message': 'No reviews found for this service provider'}), 404
+
+        # Serialize reviews data
+        # customer_name = Customer.query.filter_by(id=Review.customer_id).first().fullname
+           
+        serialized_reviews = [{
+            'review_id': review.id,
+            'customer': review.customer_id,  # Assuming there's a 'name' attribute in the customer model
+            'stars_given': review.stars_given,
+            'comments': review.comments
+        } for review in reviews]
+
+        return jsonify(serialized_reviews)
+    except Exception as e:
+        error_message = f"Failed to get reviews: {str(e)}"
+        return jsonify({'error': error_message}), 500   
+
+
+@app.route('/get_reviews_with_average_rating', methods=['GET'])
+def get_reviews_with_average_rating():
+    try:
+        # Fetch all reviews where stars_given is not NULL and booking_id is not NULL
+        reviews = Review.query.filter(Review.stars_given.isnot(None), Review.booking_id.isnot(None)).all()
+
+        # Dictionary to store sum of stars given and count of reviews for each booking ID
+        booking_ratings = {}
+
+        # Calculate sum of stars given and count of reviews for each booking ID
+        for review in reviews:
+            booking_id = review.booking_id
+            stars_given = review.stars_given
+
+            if booking_id not in booking_ratings:
+                # If booking ID not seen before, initialize sum and count
+                booking_ratings[booking_id] = {'sum': 0, 'count': 0}
+
+            # Increment sum and count
+            booking_ratings[booking_id]['sum'] += stars_given
+            booking_ratings[booking_id]['count'] += 1
+
+        # Calculate average rating for each booking ID
+        for booking_id, rating_data in booking_ratings.items():
+            average_rating = rating_data['sum'] / rating_data['count']
+            rating_data['average_rating'] = average_rating
+
+        return jsonify(booking_ratings)
+    except Exception as e:
+        error_message = f"Failed to get reviews with average rating: {str(e)}"
+        return jsonify({'error': error_message}), 500
+    
+
+
+@app.route('/get_random_comment/<int:booking_id>', methods=['GET'])
+def get_random_comment(booking_id):
+    try:
+        # Fetch all reviews for the given booking_id
+        reviews = Review.query.filter_by(booking_id=booking_id).all()
+
+        if not reviews:
+            return jsonify({'error': 'No reviews found for the given booking ID'}), 404
+
+        # Select a random review from the list
+        random_review = random.choice(reviews)
+
+        # Construct response
+        response = {
+            'booking_id': random_review.booking_id,
+            'random_comment': random_review.comments
+        }
+
+        return jsonify(response)
+    except Exception as e:
+        error_message = f"Failed to get random comment: {str(e)}"
         return jsonify({'error': error_message}), 500
 
 class Admins(Resource):
