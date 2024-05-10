@@ -61,8 +61,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     }
     // Clear error message when user starts typing
     setError("");
+    
   };
-
   const validateForm = () => {
     const {
       fullname,
@@ -70,7 +70,6 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
       email,
       password,
       service_title,
-      service_category,
       pricing,
       hours_available,
       location,
@@ -79,6 +78,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
       video,
       work_images,
       registration_document,
+      service_category,
+      custom_service_category,
     } = formData;
 
     // Check for empty fields
@@ -88,7 +89,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
       !email ||
       !password ||
       !service_title ||
-      !service_category ||
+      !(service_category || custom_service_category) ||
       !pricing ||
       !hours_available ||
       !location ||
@@ -115,10 +116,20 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
   };
 
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isRegistering ? "businessregister" : "businesslogin";
+
+    // Check if the selected service category is "Other"
+    let category = formData.service_category;
+    if (category === "Other") {
+      category = formData.custom_service_category; // Use custom service category if "Other" selected
+    }
+
+    const formDataToSend = {
+      ...formData,
+      service_category: category, // Update service category with custom value if applicable
+    };
 
     if (isRegistering) {
       // Create FormData instance to send files
@@ -130,9 +141,9 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           key === "work_images" ||
           key === "registration_document"
         ) {
-          formDataInstance.append(key, formData[key]);
+          formDataInstance.append(key, formDataToSend[key]);
         } else {
-          formDataInstance.append(key, formData[key]);
+          formDataInstance.append(key, formDataToSend[key]);
         }
       }
 
@@ -170,15 +181,6 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
         }
       }
 
-
-      //   } else if (response.data.error) {
-      //     // Handle errors
-      //     setError(response.data.error);
-      //   }
-      // } catch (error) {
-      //   console.error(error);
-      //   setError("An error occurred. Please try again.");
-      // }
     } else {
       try {
         const response = await axios.post(
@@ -339,8 +341,22 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
                   <option value="Engineer">Engineer</option>
                   <option value="Electrician">Electrician</option>
                   <option value="Body guard">Body guard</option>
+                  <option value="Other">Other</option>{" "}
+                  {/* Add "Other" option */}
                   {/* Add more options as needed */}
                 </select>
+                {/* Display input field only if "Other" is selected */}
+                  {formData.service_category === "Other" && (
+                    <input
+                      type="text"
+                      name="custom_service_category"
+                      className="input-field"
+                      placeholder="Enter custom service category"
+                      value={formData.custom_service_category}
+                      onChange={handleInputChange}
+                    />
+                  )}
+                
                 <input
                   type="number"
                   name="pricing"
@@ -383,9 +399,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
                   onChange={(e) => handleFileChange(e, "video")}
                 />
 
-                <label htmlFor="work_images">
-                  Choose work images:
-                </label>
+                <label htmlFor="work_images">Choose work images:</label>
                 <input
                   type="file"
                   name="work_images"
