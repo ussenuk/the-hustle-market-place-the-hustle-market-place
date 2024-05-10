@@ -52,3 +52,13 @@ form button:hover {
 .switch-button:hover {
     background-color: #4CAF50;
 }
+
+.welcome-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.welcome-message {
+    font-size: 24px;
+    color: #4CAF50;
+}
