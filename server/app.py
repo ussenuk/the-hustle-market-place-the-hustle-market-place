@@ -124,6 +124,7 @@ def logout_admin_route():
         session.pop('admin_id')
     return jsonify({'message': 'Logout successful'}), 200
 
+
 # User Registration
 @app.route('/userregister', methods=['POST'])
 def register_user():
@@ -134,9 +135,11 @@ def register_user():
     password = data.get('password')
     location = data.get('location')
 
-    if not fullname or not username or not email or not password or not location:
-        return jsonify({'error': 'Missing required fields'}), 400
+    # Validate compulsory fields
+    if not all([fullname, username, email, password, location]):
+        return jsonify({'error': 'Please fill all the required fields.'}), 400
 
+    # Check for unique email and username
     if Customer.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already in use'}), 409
     if Customer.query.filter_by(username=username).first():
@@ -160,8 +163,7 @@ def login_user_route():
     user = Customer.query.filter_by(email=email).first()
     if user and user.check_password(password):
         session['user_id'] = user.id
-        # login_user(user)
-        return jsonify({'message': 'Logged in successfully', 'user_id': user.id}), 200
+        return jsonify({'message': 'Logged in successfully', 'user_id': user.id, 'username': user.username}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
 
