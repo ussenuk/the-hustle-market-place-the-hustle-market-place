@@ -75,7 +75,7 @@ const HomePage = () => {
     try {
       const reviewData = {
         stars_given: rating,
-        booking_id: bookedServiceId, // Assuming bookedServiceId is the booking ID
+        booking_id: serviceId, // Assuming bookedServiceId is the booking ID
         customer_id: getUserId(),
         comments: reviewComment
       };
@@ -132,7 +132,8 @@ const HomePage = () => {
                   reviewComment={reviewComment}
                   setReviewComment={setReviewComment}
                   rating={rating} 
-                setRating={setRating} 
+                setRating={setRating}
+                serviceId={service.service_id} 
                   />
                 ))}
               </Box>

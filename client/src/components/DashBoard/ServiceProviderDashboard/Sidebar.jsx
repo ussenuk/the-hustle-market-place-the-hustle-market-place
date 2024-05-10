@@ -97,7 +97,7 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout,
           </li>
           <li className='sidebar-list-item' onClick={() => handleMenuItemClick('users')}>
             
-              <BsPeopleFill className='icon'/> Users
+              <BsPeopleFill className='icon'/> Invite Customers
            
           </li>
           <li className='sidebar-list-item' onClick={() => handleMenuItemClick('reviews')}>
