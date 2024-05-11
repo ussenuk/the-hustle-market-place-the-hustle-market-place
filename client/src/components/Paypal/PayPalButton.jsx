@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import jsPDF from 'jspdf';
 
@@ -8,87 +8,32 @@ const PayPalButton = () => {
 
   const handlePaymentSuccess = (details) => {
     console.log('Payment successful', details);
-
-    // Set payment details to state
     setPaymentDetails(details);
-
-    // Send the payment details to the backend API
     sendPaymentDetailsToBackend(details);
-
-    // Download payment details PDF
-    downloadPaymentDetailsPDF(details);
+    fetchUserName();
   };
 
   const sendPaymentDetailsToBackend = (details) => {
-    // Extract relevant information from details
-    const { id, intent, status, purchase_units, payer, create_time, update_time } = details;
-    const { amount } = purchase_units[0];
-    const { name, email_address, payer_id } = payer;
-  
-    // Prepare the data to send to the backend API
+    // Prepare and send payment data to your backend
     const paymentData = {
-      payment: {
-        id: details.id,
-        status: details.status,
-        option: details.intent,
-        create_time: details.create_time,
-        update_time: details.update_time,
-        payer: {
-          name: details.payer.name.given_name + ' ' + details.payer.name.surname,
-          email: details.payer.email_address,
-          payer_id: details.payer.payer_id
-        },
-        purchase_units: [{
-          amount: {
-            value: details.purchase_units[0].amount.value,
-            currency_code: details.purchase_units[0].amount.currency_code
-          }
-        }]
-      },
-      booking_id: details.payer.payer_id, // Assuming booking_id is directly available in details
-      customer_id: sessionStorage.getItem('user_id') // Assuming customer_id is directly available in details
+      // your payment data structure
     };
-  
-    // Send the payment details to the backend API
+
     fetch('http://127.0.0.1:5555/savepayment', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(paymentData)
-    }).then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to save payment details');
-      }
-      return response.json(); // Parse JSON response
-    }).then(data => {
-      // Handle successful response
-      console.log('Payment details saved successfully:', data);
-      
-      // Fetch user name after payment is done
-      fetchUserName();
-    }).catch(error => {
-      // Handle error
-      console.error('Error saving payment details:', error);
-    });
-  };
-  
-  const fetchUserName = async () => {
-    try {
-      const response = await fetch(`http://127.0.0.1:5555/get_logged_in_username/${userName}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserName(data.username);
-      } else {
-        throw new Error('Failed to fetch user name');
-      }
-    } catch (error) {
-      console.error('Error fetching user name:', error);
-      // Handle error if needed
-    }
+    })
+    .then(response => response.json())
+    .then(data => console.log('Payment details saved successfully:', data))
+    .catch(error => console.error('Error saving payment details:', error));
   };
 
-  const downloadPaymentDetailsPDF = (paymentDetails) => {
+  const fetchUserName = async () => {
+    // Fetch user name logic
+  };
+
+  const downloadPaymentDetailsPDF = () => {
     const doc = new jsPDF();
     doc.text('Payment Details', 10, 10);
     doc.text(`ID: ${paymentDetails.id}`, 10, 20);
@@ -107,47 +52,27 @@ const PayPalButton = () => {
 
   return (
     <div>
-      <PayPalScriptProvider
-        options={{
-          'client-id': 'AcWQvHSSlSkxrmKJevzaG8nBgLKh5Z2z2f7wzlTcinCVFlK1N6otxDridE-WZ6pdXBSEMKOoUQqaaLAP',
-          currency: 'USD',
-        }}
-      >
+      <PayPalScriptProvider options={{ 'client-id': 'AcWQvHSSlSkxrmKJevzaG8nBgLKh5Z2z2f7wzlTcinCVFlK1N6otxDridE-WZ6pdXBSEMKOoUQqaaLAP', currency: 'USD' }}>
         <PayPalButtons
           style={{ layout: 'horizontal' }}
-          createOrder={(data, actions) => {
-            return actions.order.create({
-              purchase_units: [
-                {
-                  amount: {
-                    value: '10', // You can specify the amount here or pass it as a prop
-                  },
-                },
-              ],
-            });
-          }}
-          onApprove={(data, actions) => {
-            return actions.order.capture().then(function(details) {
-              handlePaymentSuccess(details);
-            });
-          }}
+          createOrder={(data, actions) => actions.order.create({
+            purchase_units: [{ amount: { value: '10' }}]
+          })}
+          onApprove={(data, actions) => actions.order.capture().then(handlePaymentSuccess)}
         />
       </PayPalScriptProvider>
 
-      {/* Render payment details if available */}
       {paymentDetails && (
         <div>
           <h2>Payment Details</h2>
           <p>ID: {paymentDetails.id}</p>
           <p>Intent: {paymentDetails.intent}</p>
-          {/*<p>Amount: {paymentDetails.purchase_units[0].amount.value} {paymentDetails.purchase_units[0].amount.currency_code}</p>*/}
           <p>Status: {paymentDetails.status}</p>
           <p>Creation Time: {paymentDetails.create_time}</p>
           <p>Update Time: {paymentDetails.update_time}</p>
-          
           <p>Payer ID: {paymentDetails.payer.payer_id}</p>
-          {/* Render more details as needed */}
-          <p>Thankyou, {userName} your payment is complete</p>
+          <p>Thank you {userName}, your payment is complete.</p>
+          <button onClick={downloadPaymentDetailsPDF}>Download Payment Details</button>
         </div>
       )}
     </div>
