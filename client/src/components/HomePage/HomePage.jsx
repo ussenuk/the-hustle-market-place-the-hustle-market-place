@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./homepage.css";
-import userImage from '../DashBoard/ServiceProviderDashboard/pages/teacher.png';
-import { Box, Divider } from "@mui/material";
+import { Box } from "@mui/material";
 import ServiceCard from "./ServiceCard";
 
 const HomePage = () => {
@@ -18,28 +17,26 @@ const HomePage = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5555/services");
+        const response = await fetch('http://127.0.0.1:5555/services');
         if (response.ok) {
           const data = await response.json();
           setServices(data);
           setFilteredServices(data); // Initialize filtered services with all services
         } else {
-          throw new Error("Failed to fetch services");
+          throw new Error('Failed to fetch services');
         }
       } catch (error) {
-        console.error("Error fetching services:", error);
-        setError("Failed to fetch services. Please try again.");
+        console.error('Error fetching services:', error);
+        setError('Failed to fetch services. Please try again.');
       }
     };
 
     fetchServices();
-
-    // Clear local storage on component mount (page load)
     localStorage.clear();
   }, []);
 
   const handleNavigateHome = () => {
-    navigate("/");
+    navigate('/');
   };
 
   const handleBooking = async (serviceId) => {

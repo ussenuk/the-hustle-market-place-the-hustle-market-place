@@ -1,0 +1,71 @@
+.about-container {
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    text-align: center;
+    /* Center aligns all text within the container */
+}
+
+.about-container h1,
+.about-container h2 {
+    color: #4CAF50;
+}
+
+.about-container p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.mission,
+.vision,
+.values {
+    margin-top: 20px;
+}
+
+.values ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.values li {
+    padding: 5px 0;
+    font-size: 16px;
+}
+
+.contact-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    /* Keeps buttons centered horizontally */
+}
+
+.contact-buttons button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    /* Adds some space between buttons */
+    background-color: #5CB85C;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.contact-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 2px 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.contact-buttons button:focus {
+    outline: none;
+    box-shadow: 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.contact-buttons button:active {
+    transform: translateY(1px);
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
+}

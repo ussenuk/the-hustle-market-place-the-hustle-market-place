@@ -12,6 +12,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from validators import validate_file, validate_business_description
 from flask_mail import Mail, Message
 from datetime import datetime
+from flask_cors import CORS
+
 #Sending an email using Flask-Mail
 
 from sqlalchemy import func
@@ -31,6 +33,7 @@ def send_email():
     message.body = message_body
     mail.send(message)
     return 'Email sent!'
+
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -72,6 +75,10 @@ class Home(Resource):
             })
 
 api.add_resource(Home, '/')
+
+# Flask route to get the logged-in user's name
+# Flask route to get the logged-in user's name
+
 
 
 # @app.route('/admindashboard')
@@ -167,6 +174,23 @@ def login_user_route():
     return jsonify({'error': 'Invalid credentials'}), 401
 
 
+@app.route('/get_user_name', methods=['GET'])
+def get_user_name():
+    # Check if user is logged in
+    if 'user_id' in session:
+        user_id = session['user_id']
+        # Fetch the user from the database
+        user = Customer.query.get(user_id)
+        if user:
+            # Return the user's full name
+            return jsonify({'user_name': user.fullname}), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+
+
 # User Logout
 @app.route('/logout', methods=['GET'])
 def logout_user_route():
@@ -212,6 +236,16 @@ def search_services():
 
     return jsonify(serialized_services), 200
 
+@app.route('/search_service_name/<int:service_id>', methods=['GET'])
+def search_service_name(service_id):
+    # Query the service based on the service_id
+    service = Service.query.filter_by(id=service_id).first()
+
+    if not service:
+        return jsonify({'error': 'Service not found'}), 404
+
+    # Return the service name
+    return jsonify({'service_name': service.service_title}), 200
 
 """ @app.route('/search_services', methods=['POST'])
 def search_services():
@@ -379,6 +413,19 @@ def register_business():
     db.session.commit()
 
     return jsonify({'message': 'Registration successful'}), 201
+# Service Provider Name Retrieval
+@app.route('/service_provider_name/<int:service_id>', methods=['GET'])
+def get_service_provider_name(service_id):
+    # Query the service provider associated with the given service ID
+    service = Service.query.filter_by(id=service_id).first()
+    if not service:
+        return jsonify({'error': 'Service not found'}), 404
+    
+    service_provider = ServiceProvider.query.filter_by(id=service.service_provider_id).first()
+    if not service_provider:
+        return jsonify({'error': 'Service provider not found'}), 404
+    
+    return jsonify({'service_provider_name': service_provider.fullname}), 200
 
 
 # Service Provider Login
@@ -1013,19 +1060,82 @@ class Payments(Resource):
 
         return make_response(jsonify(serialized_payments), 200)
 
+@app.route('/savepayment', methods=['POST'])
+def save_payment():
+    # Get the payment details from the request
+    payment_data = request.json
+
+    # Create a new Payment object with the received data
+    payment = Payment(
+        
+        payment_status=payment_data.get('payment').get('status'),
+        payment_option=payment_data.get('payment').get('option'),
+        booking_id=payment_data.get('payment').get('booking_id'),
+        customer_id=payment_data.get('customer_id')
+        # Add more fields as needed
+    )
+
+    # Add the Payment object to the database session
+    db.session.add(payment)
+
+    try:
+        # Commit the session to save the payment details to the database
+        db.session.commit()
+        return jsonify({'message': 'Payment details saved successfully'}), 201
+    except Exception as e:
+        # Rollback the session in case of error
+        db.session.rollback()
+        return jsonify({'error': 'Failed to save payment details', 'details': str(e)}), 500
+class LoggedInUsername(Resource):
+    def get(self):
+        # Check if the user is logged in
+        if current_user.is_authenticated:
+            print (f'{current_user.username}')
+            # Return the username of the logged-in user
+            return jsonify({'username': current_user.username}), 200
+        else:
+            return jsonify({'error': 'User not logged in'}), 401
+class Users(Resource):
+    def get(self):
+        users = Customer.query.all()
+        serialized_user = []
+
+        for user in users:
+
+            # Fetch service provider name
+            user_id = user.id
+            user_username = user.username
+            user_name = user.fullname
+            
+
+            
+
+            
+            serialized_user.append({
+                "id": user_id,
+                "user": user_name,
+                
+                # Add other fields as needed
+            })
+
+        return make_response(jsonify(serialized_user), 200)
+
+
+
+
+
+
+
 api.add_resource(Services, "/services", endpoint="services")
 
 api.add_resource(Bookings, "/booking", endpoint="booking")
 
 api.add_resource(ServiceProviders, "/service_provider", endpoint="service_provider")
-
 api.add_resource(Admins, "/admin", endpoint="admin")
-
 api.add_resource(AllUsers, "/users", endpoint="users")
-
 api.add_resource(AllUser, "/user/<int:user_id>/<string:user_type>", endpoint="user")
-
 api.add_resource(Payments, "/payments", endpoint="payments")
+api.add_resource(Users, "/user_name", endpoint="user_name")
 
 
 if __name__ == '__main__':
