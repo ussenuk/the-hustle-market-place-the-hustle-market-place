@@ -195,7 +195,7 @@ const ServiceCard = ({
         <span
           key={i}
           style={{
-            color: (i <= averageRating) ? 'gold' : 'gray',
+            color: (i <= averageRating) ? '#E0BE36' : 'gray',
             cursor: 'pointer'
           }}
         >

@@ -1,3 +1,5 @@
+
+
 // client/src/components/Userlogin/UserLogin.jsx
 
 import React, { useState, useEffect } from "react";
@@ -34,9 +36,15 @@ const UserAccess = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isRegistering ? "userregister" : "userlogin";
-    const payload = {
-      ...formData,
-    };
+    const payload = { ...formData };
+
+    if (isRegistering) {
+      const { fullname, username, email, password, location } = formData;
+      if (!fullname || !username || !email || !password || !location) {
+        setError("Please fill all the required fields.");
+        return;
+      }
+    }
 
     try {
       const response = await axios.post(
@@ -45,25 +53,28 @@ const UserAccess = () => {
       );
 
       if (response.data.user_id) {
-        // User is logged in
         sessionStorage.setItem("user_id", response.data.user_id);
         setIsLoggedIn(true);
-        setUsername(response.data.username); // Set the username
+        setUsername(response.data.username);
+        navigate("/"); // Redirect user to the homepage or dashboard after login
       } else if (response.data.message && isRegistering) {
-        // Registration successful, prompt login
-        alert("Registration successful, please log in."); // Optional: Use a more sophisticated notification system
-        setIsRegistering(false); // Switch to login mode
-        setError(""); // Clear any previous errors
-        setFormData({ ...formData, password: "" }); // Clear password (and any other sensitive data)
-      } else if (response.data.error) {
-        // Handle errors
-        setError(response.data.error);
+        alert("Registration successful, please log in.");
+        setIsRegistering(false);
+        setError("");
+        setFormData({ ...formData, password: "" });
+      } else {
+        setError(response.data.error || "An unexpected error occurred");
       }
     } catch (error) {
-      console.error(error);
-      setError("An error occurred. Please try again.");
+      if (error.response) {
+        setError(error.response.data.error);
+      } else {
+        setError("An error occurred. Please try again.");
+      }
     }
   };
+
+
 
   const handleLogout = async () => {
     try {
@@ -84,9 +95,10 @@ const UserAccess = () => {
   return (
     <div className="user-access-container">
       {isLoggedIn ? (
-        <div>
-          <p>Welcome, {username}!</p> {/* Display username */}
-          <button onClick={handleLogout}>Logout</button>
+        
+        <div class="welcome-container">
+          <h2 class="welcome-message">Welcome!</h2>
+          <button class="logout-button" onClick={handleLogout}>Logout</button>
         </div>
       ) : (
         <div>
