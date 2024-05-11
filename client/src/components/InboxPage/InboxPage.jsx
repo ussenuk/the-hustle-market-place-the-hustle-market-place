@@ -60,6 +60,8 @@ function InboxPage() {
 
     const userId = sessionStorage.getItem('user_id');
     const [messages, setMessages] = useState([]);
+    const [userProf, setUserProf] = useState("");
+    const [senderName, setSenderName] = useState("");
 
     useEffect(() => {
         // Code to retrieve messages from the server
@@ -67,6 +69,7 @@ function InboxPage() {
           try {
             const response = await axios.get(`http://localhost:5555/messages/inbox/${userId}`);
             setMessages(response.data);
+            console.log(response.data);
           } catch (error) {
             console.error('Error fetching messages:', error);
           }
@@ -74,12 +77,55 @@ function InboxPage() {
         fetchMessages(); 
       }, [userId]);
 
+
+      useEffect(() => {
+        const userId = sessionStorage.getItem("user_id");
+        // Retrieve value from Session storage
+        
+        // Make API call to fetch service providers
+        fetch("http://localhost:5555/user_name")
+          .then((response) => response.json())
+          .then((data) => {
+            // Find service provider with matching ID
+            const user = data.find(
+              (provider) => provider.id === parseInt(userId)
+            );
+            console.log(user)
+            //console.log(userId)
+            if (user) {
+              setUserProf(user);
+              setSenderName(user.user);
+            }
+          })
+          .catch((error) =>
+            console.error("Error fetching service providers:", error)
+          );
+      }, []);
+
+      /* const fetchUserName = async () => {
+        try {
+          const response = await fetch(`http://127.0.0.1:5555/get_logged_in_username/${userName}`);
+          if (response.ok) {
+            const data = await response.json();
+            setUserName(data);
+          } else {
+            throw new Error('Failed to fetch user name');
+          }
+        } catch (error) {
+          console.error('Error fetching user name:', error);
+          // Handle error if needed
+        }
+        fetchUserName();
+        
+      };
+      console.log(userName.data)
+ */
       return (
         <div>
         <h2>Inbox</h2>
-        {messages &&messages.map((message) => (
-          <div key={message.id}>
-            <p>From: {message.sender_name}</p>
+        {messages && messages.map((message, index) => (
+          <div key={index}>
+            <p>From: {userProf.user || senderName}</p>
             <p>To: {message.receiver_id}</p>
             <p>Message: {message.content}</p>
           </div>

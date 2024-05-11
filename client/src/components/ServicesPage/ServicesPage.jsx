@@ -45,7 +45,7 @@ const ServicesPage = () => {
     console.log("Reviewing service with ID:", serviceId, "Review:", review);
   };
 
-  const handleMessage = (receiverId) => {
+  /* const handleMessage = (receiverId) => {
     const loggedInUserId = sessionStorage.getItem('user_id');
     if (!loggedInUserId) {
       navigate('/login');
@@ -53,7 +53,7 @@ const ServicesPage = () => {
     }
     navigate(`/new_message/${receiverId}`);
     console.log("Messaging service provider for service with ID:", receiverId);
-  };
+  }; */
 
   return (
     <div className="services-page-container">

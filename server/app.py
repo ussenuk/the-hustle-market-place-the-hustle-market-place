@@ -12,6 +12,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from validators import validate_file, validate_business_description
 from flask_mail import Mail
 from flask_cors import CORS
+from sqlalchemy import func
+import random
 
 
 
@@ -41,15 +43,16 @@ def get_other_user_name(sender_id, user_type):
 @app.route('/new_message', methods=['POST'])
 def new_message():
     data = request.get_json()
-    sender = data.get('sender')
-    receiver = data.get('receiver')
+    sender_id = data.get('sender_id')
+    receiver_id = data.get('receiver_id')
     content = data.get('content')
     sender_name = data.get('sender_name')
+  
 
-    if not all([sender, receiver, content, sender_name]):
-        return jsonify({'error': 'Missing required fields'}), 400
+   # if not all([sender_id, receiver_id, content]):
+      #  return jsonify({'error': 'Missing required fields'}), 400 
 
-    message = Message(sender_id=sender, receiver_id=receiver, content=content, sender_name=sender)
+    message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content, sender_name=sender_name)
     db.session.add(message)
     db.session.commit()
 
@@ -82,13 +85,9 @@ def get_messages(sender_id, receiver_id):
 
     messages_data = [{**message.as_dict(), 'sender_name': get_user_name(message.sender_id)} for message in messages]
     return jsonify(messages_data), 200
-from flask_cors import CORS
+
 
 #Sending an email using Flask-Mail
-
-from sqlalchemy import func
-import random
-
 @app.route('/send-email', methods=['POST'])
 def send_email():
     data = request.json

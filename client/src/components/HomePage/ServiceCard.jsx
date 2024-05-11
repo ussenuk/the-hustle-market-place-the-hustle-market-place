@@ -9,6 +9,7 @@ import {
 import { makeStyles } from "@mui/styles"; // Import makeStyles
 import StarRating from "./StarRating";
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -130,6 +131,7 @@ const ServiceCard = ({
   serviceId, 
 }) => {
   const classes = useStyles();
+  const navigate = useNavigate();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [averageRating, setAverageRating] = useState(null); // State to store average rating
   const [randomComment, setRandomComment] = useState(""); // State to store random comment
@@ -170,6 +172,16 @@ const ServiceCard = ({
   const handleBookService = async () => {
     await handleBooking(service.service_id);
     setShowSuccessMessage(true);
+  };
+
+  const handleMessage = (receiverId) => {
+    const loggedInUserId = sessionStorage.getItem('user_id');
+    if (!loggedInUserId) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/new_message/${receiverId}`);
+    console.log("Messaging service provider for service with ID:", receiverId);
   };
 
   const handleRatingChange = (newRating) => {
@@ -262,7 +274,7 @@ const ServiceCard = ({
           Review
         </CustomButton>
         <CustomButton
-           
+           onClick={() => handleMessage(service.service_id)}
         >
           Message
         </CustomButton>

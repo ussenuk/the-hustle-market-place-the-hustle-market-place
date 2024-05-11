@@ -6,39 +6,61 @@ import { useParams } from 'react-router-dom';
 
 const ComposeMessagePage = () => {
   
-  const [userProf, setUserProf] = useState(null);
+  const [userProf, setUserProf] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [senderName, setSenderName] = useState('');
+  const [userName, setUserName] = useState('');
 
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchUserProf = async () => {
       try {
-        const response = await axios.get(`http://localhost:5555/users`);
-        setUserProf(response.data.username);
+        const sender_name = await fetch('http://localhost:5555/user_name');
+        if (sender_name.ok) {
+          const data = await sender_name.json();
+          setUserProf(data.user_name);
+        } else {
+          console.error('Error fetching user profile');
+        }
       } catch (error) {
         console.error('Error fetching user profile:', error);
-      } finally {
-        setIsLoading(false); // Set loading to false after fetching (success or failure)
       }
     };
     fetchUserProf();
-  }, []);
+  }, []); */
+  
 
   const pathParams = useParams();
-
   const senderId = sessionStorage.getItem("user_id");
   //const sender_name = userProf ? userProf.find(user => user.id === senderId)?.name : '';
-  const sender_name = userProf && senderId
-    ? userProf.find(user => user.id === parseInt(senderId))?.username
-    : '';
   const receiverId = pathParams['receiverId'];
   console.log("receiverId: ", receiverId,
     "senderId:", senderId,
-    "sender_name:", sender_name
   );
-
-
-
   const [content, setContent] = useState('');
+
+  useEffect(() => {
+    const userId = sessionStorage.getItem("user_id");
+    // Retrieve value from Session storage
+    
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/user_name")
+      .then((response) => response.json())
+      .then((data) => {
+        // Find service provider with matching ID
+        const user = data.find(
+          (provider) => provider.id === parseInt(userId)
+        );
+        console.log(user)
+        //console.log(userId)
+        if (user) {
+          setUserProf(user);
+          setSenderName(user.user);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching service providers:", error)
+      );
+  }, []);
 
   const sendMessage = async () => {
     if (!senderId) {
@@ -56,17 +78,13 @@ const ComposeMessagePage = () => {
       return;
     }
 
-    if (!sender_name) {
-      console.error('Null pointer exception: content is null');
-      return;
-    }
 
     try {
       await axios.post(`http://localhost:5555/new_message`, {
-        sender: senderId,
-        sender_name: sender_name,
-        receiver: receiverId,
-        content: content
+        sender_id: senderId,
+        receiver_id: receiverId,
+        content: content,
+        sender_name: senderName,
       });
       setContent('');
     } catch (error) {
@@ -98,7 +116,7 @@ const ComposeMessagePage = () => {
 
   return (
     <div>
-      <h2>Compose Message</h2>
+      <h2>{userProf.user || senderName} - Compose Message</h2>
       <textarea value={content} onChange={(e) => setContent(e.target.value)} />
       <button onClick={sendMessage}>Send</button>
     </div>
