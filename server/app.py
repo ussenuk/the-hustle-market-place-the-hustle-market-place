@@ -2,23 +2,92 @@
 
 # server/app.py
 
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
-from config import app, db, CORS, api, mail
-from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
+from config import app, db, api, mail
+from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin, Message
 from flask_restful import Resource, reqparse
 from werkzeug.utils import secure_filename
 import os
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from validators import validate_file, validate_business_description
-from flask_mail import Mail, Message
-from datetime import datetime
+from flask_mail import Mail
 from flask_cors import CORS
-
-#Sending an email using Flask-Mail
-
 from sqlalchemy import func
 import random
 
+
+
+from datetime import datetime
+
+CORS(app)
+
+#messages = Blueprint("messages", __name__, url_prefix="/api")
+
+
+def get_user_name(user_id):
+    user = Customer.query.get(user_id)
+    if user:
+        return user.get_name()
+    user = ServiceProvider.query.get(user_id)
+    if user:
+        return user.get_name()
+    return None  # Indicate user not found
+
+
+def get_other_user_name(sender_id, user_type):
+    if user_type == "customer":
+        return ServiceProvider.query.get(sender_id).get_name()  # Assuming get_name() exists in ServiceProvider model
+    else:
+        return Customer.query.get(sender_id).get_name() 
+    
+@app.route('/new_message', methods=['POST'])
+def new_message():
+    data = request.get_json()
+    sender_id = data.get('sender_id')
+    receiver_id = data.get('receiver_id')
+    content = data.get('content')
+    sender_name = data.get('sender_name')
+  
+
+   # if not all([sender_id, receiver_id, content]):
+      #  return jsonify({'error': 'Missing required fields'}), 400 
+
+    message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content, sender_name=sender_name)
+    db.session.add(message)
+    db.session.commit()
+
+    return jsonify({'message': 'Message sent successfully'}), 201
+
+@app.route('/messages/inbox/<int:userId>', methods=['GET'])
+def get_inbox(userId):
+    user = None
+    if Customer.query.filter_by(id=userId).first():
+        user = Customer.query.filter_by(id=userId).first()
+    elif ServiceProvider.query.filter_by(id=userId).first():
+        user = ServiceProvider.query.filter_by(id=userId).first()
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    messages = Message.query.filter((Message.sender_id == userId) | (Message.receiver_id == userId)).all()
+    inbox = [
+    {**message.as_dict(), 'sender_name': user.get_name() if message.sender_id == userId else get_other_user_name(message.sender_id, user.user_type)}
+    for message in messages
+]
+    return jsonify(inbox), 200
+
+@app.route('/messages/all/<sender_id>/<receiver_id>', methods=['GET'])
+def get_messages(sender_id, receiver_id):
+    messages = Message.query.filter(
+        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
+        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id)) 
+    ).all()
+
+    messages_data = [{**message.as_dict(), 'sender_name': get_user_name(message.sender_id)} for message in messages]
+    return jsonify(messages_data), 200
+
+
+#Sending an email using Flask-Mail
 @app.route('/send-email', methods=['POST'])
 def send_email():
     data = request.json

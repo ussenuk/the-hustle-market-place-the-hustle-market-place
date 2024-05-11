@@ -131,6 +131,8 @@ import AdminAccess from "./components/Admin/Admin";
 import PayPalButton from "./components/Paypal/PayPalButton";
 import PaymentPage from './components/PaymentPage/PaymentPage';
 import axios from "axios";
+import ComposeMessagePage from "./components/ComposeMessagePage/ComposeMessagePage";
+import InboxPage from "./components/InboxPage/InboxPage";
 
 const App = () => {
 
@@ -219,6 +221,9 @@ const AppContent = () => {
         <Route path="/search" element={<Search />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
         <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin}/>} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/inbox" element={<InboxPage />} />
+        <Route path="/new_message/:receiverId" element={<ComposeMessagePage />} />
         <Route path="/PayPalButton" element={<PayPalButton isLoggedIn={isLoggedIn} />} /> {/* Define PayPalButton route */}
 //       
       </Routes>
