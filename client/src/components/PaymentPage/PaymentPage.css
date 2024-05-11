@@ -1,0 +1,27 @@
+/* PaymentPage.css */
+
+.payment-page-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.payment-details-container {
+  margin-top: 20px;
+}
+
+.payment-info {
+  margin-bottom: 20px;
+}
+
+.paypal-button-container {
+  text-align: center;
+}
+
+/* Optional: Style for the service provider name */
+.service-provider-info {
+  font-style: italic;
+  color: #0c0606;
+}

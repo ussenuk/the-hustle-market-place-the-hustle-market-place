@@ -118,6 +118,7 @@ const ServiceCard = ({
   service,
   handleReview,
   handleBooking,
+  handlePayNow,
   bookedServiceId,
   setBookedServiceId,
   bookingDateTime,
@@ -250,7 +251,8 @@ const ServiceCard = ({
         {showSuccessMessage && (
           <div className="booking-success-popup">
             <span className={classes.notify}>You have successfully booked the service.</span>
-            <CustomButton ><span className={classes.important}>Pay</span></CustomButton> 
+            
+            <Button onClick={() => handlePayNow(serviceId, service.price)} variant="contained">Pay</Button> 
           </div>
         )}
         <CustomButton
