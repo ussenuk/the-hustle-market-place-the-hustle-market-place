@@ -50,6 +50,7 @@ const HomePage = () => {
         setError("Please log in to book a service");
         return;
       }
+
   
       // Prepare booking data
       const bookingData = {
@@ -81,12 +82,14 @@ const HomePage = () => {
     }
   };
 
+
   const getUserId = () => {
     // Replace this with your function to get the user ID
     // For example, if you are using session storage:
     return sessionStorage.getItem("user_id");
   };
 
+  // console.log(userId)
   const handleReview = async (serviceId) => {
     try {
       // Check if user is logged in
@@ -135,6 +138,14 @@ const HomePage = () => {
     setFilteredServices(filtered);
   };
 
+  const handlePayNow = (serviceId, price) => {
+    navigate(`/payment?serviceId=${serviceId}&price=${price}`);
+  };
+
+  // const getUserId = () => {
+  //   return sessionStorage.getItem('user_id');
+  // };
+
   return (
     <div className="homepage">
       <h1>Welcome to Hutle!</h1>
@@ -161,6 +172,7 @@ const HomePage = () => {
               handleReview={handleReview}
               handleBooking={() => handleBooking(service.service_id)} // Pass service ID to handleBooking
               bookingDateTime={bookingDateTime}
+              handlePayNow={handlePayNow}
               setBookingDateTime={setBookingDateTime}
               bookedServiceId={bookedServiceId}
               setBookedServiceId={setBookedServiceId}
