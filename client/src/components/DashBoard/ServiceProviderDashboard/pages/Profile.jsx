@@ -61,7 +61,7 @@ function Profile({user}) {
       <ProfileHeader/>
         <div className='user--profile'>
         <div className='user--detail'>
-          <img src={`http://localhost:5555${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
+          <img src={`${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
           <h3 className='username'>  {serviceProviderInfo.service_provider}</h3>
           <p><strong>Service Title:</strong> {serviceProviderInfo.service_title}</p>
           <span className='profession'><strong>Bio</strong> : {serviceProviderInfo.bio}</span>

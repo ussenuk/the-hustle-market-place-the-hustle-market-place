@@ -209,7 +209,7 @@ const ServiceCard = ({
   return (
     <Card className={classes.card}>
       <CardContent>
-        <img src={`http://localhost:5555${service.work_images_url}`} alt="" />
+        <img src={`${service.work_images_url}`} alt="" />
         <h3 >
           {service.service_title}
         </h3>

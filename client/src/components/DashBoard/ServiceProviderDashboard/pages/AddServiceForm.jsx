@@ -25,7 +25,7 @@ const AddServiceForm = () => {
       return;
     }
     try {
-      const response = await axios.post("http://localhost:5555/addservices", {
+      const response = await axios.post("/addservices", {
         ...formData,
       }, {
         headers: {

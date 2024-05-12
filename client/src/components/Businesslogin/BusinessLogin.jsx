@@ -319,7 +319,7 @@ const handleServicelisting = () => {
         <div>
           <div className="user-card">
             {/* Add the user image and name here */}
-            <img src={`http://localhost:5555${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
+            <img src={`${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
             <span>
               Welcome{" "}
               <span className="green-text">
