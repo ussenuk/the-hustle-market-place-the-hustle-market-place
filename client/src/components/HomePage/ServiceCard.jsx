@@ -9,6 +9,7 @@ import {
 import { makeStyles } from "@mui/styles"; // Import makeStyles
 import StarRating from "./StarRating";
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -118,6 +119,7 @@ const ServiceCard = ({
   service,
   handleReview,
   handleBooking,
+  handlePayNow,
   bookedServiceId,
   setBookedServiceId,
   bookingDateTime,
@@ -129,6 +131,7 @@ const ServiceCard = ({
   serviceId, 
 }) => {
   const classes = useStyles();
+  const navigate = useNavigate();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [averageRating, setAverageRating] = useState(null); // State to store average rating
   const [randomComment, setRandomComment] = useState(""); // State to store random comment
@@ -171,6 +174,16 @@ const ServiceCard = ({
     setShowSuccessMessage(true);
   };
 
+  const handleMessage = (receiverId) => {
+    const loggedInUserId = sessionStorage.getItem('user_id');
+    if (!loggedInUserId) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/new_message/${receiverId}`);
+    console.log("Messaging service provider for service with ID:", receiverId);
+  };
+
   const handleRatingChange = (newRating) => {
     setRating(newRating); // Update the rating state when it changes
   };
@@ -182,7 +195,7 @@ const ServiceCard = ({
         <span
           key={i}
           style={{
-            color: (i <= averageRating) ? 'gold' : 'gray',
+            color: (i <= averageRating) ? '#E0BE36' : 'gray',
             cursor: 'pointer'
           }}
         >
@@ -250,7 +263,8 @@ const ServiceCard = ({
         {showSuccessMessage && (
           <div className="booking-success-popup">
             <span className={classes.notify}>You have successfully booked the service.</span>
-            <CustomButton ><span className={classes.important}>Pay</span></CustomButton> 
+            
+            <Button onClick={() => handlePayNow(serviceId, service.price)} variant="contained">Pay</Button> 
           </div>
         )}
         <CustomButton
@@ -260,7 +274,7 @@ const ServiceCard = ({
           Review
         </CustomButton>
         <CustomButton
-           
+           onClick={() => handleMessage(service.service_id)}
         >
           Message
         </CustomButton>
