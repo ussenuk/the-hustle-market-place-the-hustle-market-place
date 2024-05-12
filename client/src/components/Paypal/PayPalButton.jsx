@@ -37,7 +37,7 @@ const PayPalButton = () => {
       customer_id: sessionStorage.getItem('user_id')  // Assuming customer_id is stored in session.
     };
 
-    fetch('http://127.0.0.1:5555/savepayment', {
+    fetch('/savepayment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ const PayPalButton = () => {
   const fetchUserName = async () => {
     try {
       // Assuming the endpoint to fetch the username, replace with actual endpoint if different.
-      const response = await fetch('http://127.0.0.1:5555/get_logged_in_username');
+      const response = await fetch('/get_logged_in_username');
       if (response.ok) {
         const data = await response.json();
         setUserName(data.username);

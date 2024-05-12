@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./homepage.css";
 import { Box } from "@mui/material";
 import ServiceCard from "./ServiceCard";
+import Footer from "../Footer/Footer";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5555/services');
+        const response = await fetch('/services');
         if (response.ok) {
           const data = await response.json();
           setServices(data);
@@ -45,7 +46,7 @@ const HomePage = () => {
       const userId = getUserId();
       if (!userId) {
         // Redirect to login page
-        navigate("/userlogin");
+        navigate("/userlogins");
         // Show error message
         setError("Please log in to book a service");
         return;
@@ -60,7 +61,7 @@ const HomePage = () => {
       };
   
       // Send booking request to the backend
-      const response = await fetch('http://127.0.0.1:5555/add_booking', {
+      const response = await fetch('/add_booking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -96,7 +97,7 @@ const HomePage = () => {
       const userId = getUserId();
       if (!userId) {
         // Redirect to login page
-        navigate("/userlogin");
+        navigate("/userlogins");
         // Show error message
         setError("Please log in to add a review");
         return;
@@ -109,7 +110,7 @@ const HomePage = () => {
         comments: reviewComment
       };
   
-      const response = await fetch('http://127.0.0.1:5555/add_review', {
+      const response = await fetch('/add_review', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -185,6 +186,7 @@ const HomePage = () => {
           ))}
         </Box>
       </div>
+      <Footer />
     </div>
   );
 };

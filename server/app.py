@@ -2,7 +2,7 @@
 
 # server/app.py
 
-from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_from_directory
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, make_response, jsonify, session, send_file, send_from_directory
 from config import app, db, api, mail
 from models import Customer, ServiceProvider, Payment, Review, Booking, Service, Admin, Message
 from flask_restful import Resource, reqparse
@@ -17,12 +17,33 @@ import random
 
 
 
+
 from datetime import datetime
 
 CORS(app)
 
 #messages = Blueprint("messages", __name__, url_prefix="/api")
 
+
+BASEPATH = os.path.abspath(os.path.dirname(__file__))
+print(BASEPATH)
+
+
+@app.route('/')
+def root():
+    return send_file(os.path.join(BASEPATH, 'static/index.html'))
+
+@app.route('/<path:path>')
+def staticfiles(path):
+    if os.path.exists(os.path.join(BASEPATH, "static", path)):
+        return send_from_directory(os.path.join(BASEPATH, "static"), path)
+    else:
+        return send_file(os.path.join(BASEPATH, 'static/index.html'))
+
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(app.static_folder, filename)
 
 def get_user_name(user_id):
     user = Customer.query.get(user_id)
@@ -123,27 +144,27 @@ def handle_unauthorized():
 
 
 # Home route
-class Home(Resource):
-    def get(self):
-        if 'user_id' in session:
-            return jsonify({
-                "message": "Welcome to the Home Page",
-                "status": "logged_in",
-                "user_id": session['user_id']
-            })
-        elif 'business_id' in session:
-            return jsonify({
-                "message": "Welcome to the Home Page",
-                "status": "logged_in",
-                "business_id": session['business_id']
-            })
-        else:
-            return jsonify({
-                "message": "Welcome to the Home Page",
-                "status": "logged_out"
-            })
+# class Home(Resource):
+#     def get(self):
+#         if 'user_id' in session:
+#             return jsonify({
+#                 "message": "Welcome to the Home Page",
+#                 "status": "logged_in",
+#                 "user_id": session['user_id']
+#             })
+#         elif 'business_id' in session:
+#             return jsonify({
+#                 "message": "Welcome to the Home Page",
+#                 "status": "logged_in",
+#                 "business_id": session['business_id']
+#             })
+#         else:
+#             return jsonify({
+#                 "message": "Welcome to the Home Page",
+#                 "status": "logged_out"
+#             })
 
-api.add_resource(Home, '/')
+# api.add_resource(Home, '/')
 
 # Flask route to get the logged-in user's name
 # Flask route to get the logged-in user's name
@@ -662,9 +683,7 @@ class Services(Resource):
 
     
     
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(app.static_folder, filename)
+
 
 class ServiceProviders(Resource):
     def get(self):
@@ -904,6 +923,36 @@ def get_reviews_with_average_rating():
         return jsonify(booking_ratings)
     except Exception as e:
         error_message = f"Failed to get reviews with average rating: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/reviews', methods=['GET'])
+def get_reviews():
+    try:
+        reviews = Review.query.all()
+        serialized_reviews = [{
+            'review_id': review.id,
+            'customer': review.customer_id,  # Assuming there's a 'name' attribute in the customer model
+            'stars_given': review.stars_given,
+            'comments': review.comments
+        } for review in reviews]
+        return jsonify(serialized_reviews)
+    except Exception as e:
+        error_message = f"Failed to get reviews: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/delete_review/<int:review_id>', methods=['DELETE'])
+def delete_review(review_id):
+    try:
+        review = Review.query.get(review_id)
+        if not review:
+            return jsonify({'message': 'Review not found'}), 404
+
+        db.session.delete(review)
+        db.session.commit()
+
+        return jsonify({'message': 'Review deleted successfully'})
+    except Exception as e:
+        error_message = f"Failed to delete review: {str(e)}"
         return jsonify({'error': error_message}), 500
     
 

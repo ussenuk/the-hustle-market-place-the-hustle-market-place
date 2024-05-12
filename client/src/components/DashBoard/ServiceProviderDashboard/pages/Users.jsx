@@ -15,7 +15,7 @@ function Users() {
   const [additionalInfo, setAdditionalInfo] = useState('Join Hutle Market Place and discover my amazing services!');
 
   const sendInvitations = () => {
-    fetch('http://127.0.0.1:5555/send-email', {
+    fetch('/send-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

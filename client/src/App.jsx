@@ -177,7 +177,7 @@ const AppContent = () => {
 
   const handleLogoutAdmin = async () => {
     try {
-    await axios.get("http://localhost:5555/adminlogout");
+    await axios.get("/adminlogout");
     sessionStorage.removeItem("admin_id");
     setIsLoggedInAdmin(false);
     navigate("/"); // Navigate to the home page after logging out
@@ -190,7 +190,7 @@ const AppContent = () => {
 
      const handleLogoutServiceProvider = async () => {
       try {
-      await axios.get("http://localhost:5555/businesslogout");
+      await axios.get("/businesslogout");
       sessionStorage.removeItem("business_id");
       setIsLoggedIn(false);
       navigate("/"); // Navigate to the home page after logging out
@@ -200,6 +200,10 @@ const AppContent = () => {
         console.error("Logout error:", error);
       }
        };
+
+  const handleNavigateHome = () => {
+  navigate('/');
+  };
 
   return (
     <div className={isDashboardRoute ? "" : "app-container"}>
@@ -215,13 +219,13 @@ const AppContent = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/admin" element={<AdminAccess isLoggedInAdmin={isLoggedInAdmin} setIsLoggedInAdmin={setIsLoggedInAdmin}/>} />
-        <Route path="/userlogin" element={<UserLogin />} />
+        <Route path="/admin_user" element={<AdminAccess isLoggedInAdmin={isLoggedInAdmin} setIsLoggedInAdmin={setIsLoggedInAdmin}/>} />
+        <Route path="/userlogins" element={<UserLogin />} />
         <Route path="/servicespage" element={<ServicesPage />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
-        <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin}/>} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/searchs" element={<Search />} />
+        <Route path="/businesslogins" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
+        <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin} goHome={handleNavigateHome}/>} />
+        <Route path="/searchs" element={<Search />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/new_message/:receiverId" element={<ComposeMessagePage />} />
         <Route path="/PayPalButton" element={<PayPalButton isLoggedIn={isLoggedIn} />} /> {/* Define PayPalButton route */}

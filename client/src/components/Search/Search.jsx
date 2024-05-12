@@ -8,7 +8,7 @@ function Search() {
   const [bookingDateTime, setBookingDateTime] = useState("");
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5555/services')
+    axios.get('/services')
       .then(res => {
         setData(res.data)
         setRecords(res.data);
@@ -31,7 +31,7 @@ function Search() {
         };
 
         // Send booking request to the backend
-        const response = await fetch('http://127.0.0.1:5555/add_booking', {
+        const response = await fetch('/add_booking', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

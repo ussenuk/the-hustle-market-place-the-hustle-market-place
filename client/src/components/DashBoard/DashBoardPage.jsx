@@ -10,6 +10,7 @@ import Admin from './ServiceProviderDashboard/pages/Admin'
 import UsersList from './ServiceProviderDashboard/pages/UsersList';
 import Services from './ServiceProviderDashboard/pages/Services';
 import PaymentForm from './ServiceProviderDashboard/pages/Payment';
+import ReviewsList from './ServiceProviderDashboard/pages/Reviews';
 
 function DashBoardPage({ selectedMenuItem }) {
   switch (selectedMenuItem) {
@@ -30,7 +31,7 @@ function DashBoardPage({ selectedMenuItem }) {
     case 'services':
       return <Services />;
     case 'moderation':
-      return <Admin />;
+      return <ReviewsList />;
     case 'transactions':
       return <PaymentForm />;
     case 'report':

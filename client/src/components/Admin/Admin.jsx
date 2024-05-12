@@ -34,7 +34,7 @@ const AdminAccess = ({ isLoggedInAdmin, setIsLoggedInAdmin}) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5555/${endpoint}`,
+        `/${endpoint}`,
         payload
       );
 
@@ -60,7 +60,7 @@ const AdminAccess = ({ isLoggedInAdmin, setIsLoggedInAdmin}) => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5555/adminlogout");
+      await axios.get("/adminlogout");
       sessionStorage.removeItem("admin_id");
       setIsLoggedInAdmin(false);
       navigate("/admin");
@@ -79,7 +79,7 @@ const AdminAccess = ({ isLoggedInAdmin, setIsLoggedInAdmin}) => {
     const AdminId = sessionStorage.getItem('admin_id');
 
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/admin")
+    fetch("/admin")
       .then(response => response.json())
       .then(data => {
         // Find service provider with matching ID

@@ -4,11 +4,12 @@ import {BsCart3,BsPeopleFill, BsGrid1X2Fill} from 'react-icons/bs';
 import { MdHomeRepairService,MdComment,MdHelpCenter, MdLogout } from "react-icons/md";
 import { GiMechanicGarage } from "react-icons/gi";
 import { ImStatsDots, ImCreditCard, ImEye } from "react-icons/im";
+import { HiOutlineArrowCircleLeft } from "react-icons/hi";
 import { FaPlusCircle } from "react-icons/fa";
 import { Link,  useNavigate } from 'react-router-dom';
 
 
-function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout, onLogout2}) {
+function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout, onLogout2, goHome}) {
   const navigate = useNavigate();
 
  
@@ -35,6 +36,7 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout,
           <span className='icon close_icon' onClick={OpenSidebar}>X</span>
       </div>
       <ul className='sidebar-list'>
+          
           <li className='sidebar-list-item' onClick={() => handleMenuItemClick('dashboard')}>
             
               <BsGrid1X2Fill className='icon'/> Dashboard
@@ -80,6 +82,11 @@ function Sidebar({openSidebarToggle, OpenSidebar, handleMenuItemClick, onLogout,
             <span className='icon close_icon' onClick={OpenSidebar}>X</span>
         </div>
         <ul className='sidebar-list'>
+        <li className='sidebar-list-item' onClick={goHome}>
+
+        <HiOutlineArrowCircleLeft className='icon' /> Back To Home
+        
+        </li>
           <li className='sidebar-list-item' onClick={() => handleMenuItemClick('dashboard')}>
             
               <BsGrid1X2Fill className='icon'/> Dashboard

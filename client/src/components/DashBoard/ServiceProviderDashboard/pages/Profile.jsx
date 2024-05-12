@@ -11,7 +11,7 @@ function Profile({user}) {
     const serviceProviderId = sessionStorage.getItem('business_id');
 
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/service_provider")
+    fetch("/service_provider")
       .then(response => response.json())
       .then(data => {
         // Find service provider with matching ID
@@ -30,7 +30,7 @@ function Profile({user}) {
     const AdminId = sessionStorage.getItem('admin_id');
 
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/admin")
+    fetch("/admin")
       .then(response => response.json())
       .then(data => {
         // Find service provider with matching ID

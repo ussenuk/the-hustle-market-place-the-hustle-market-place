@@ -26,14 +26,20 @@ const Navigation = () => {
     fetchUnreadMessageCount();
   }, []);
 
+
+  
+  const userId = sessionStorage.getItem("user_id");
+  const businessId = sessionStorage.getItem("business_id");
+    
+
   return (
     <div className="nav" id="nav">
       <Link to="/">Home</Link>
       {/* <Link to="/servicespage">Services</Link> */}
       {/* <Link to="/search">Search Service</Link> */}
       <Link to="/about">About Us</Link>
-      <Link to="/businesslogin">Business Login/Register</Link>
-      <Link to="/userlogin">Login/Logout</Link>
+      <Link to="/businesslogins">{businessId ? "Business Profile/DashBoard":"Business Login/Register"}</Link>
+      <Link to="/userlogins">{userId ? "Customer Logout":"Login/Logout"}</Link>
       
       <Link to="/inbox">Inbox{unreadMessageCount > 0 && `(${unreadMessageCount})`}</Link>
     </div>
