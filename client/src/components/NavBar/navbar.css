@@ -1,0 +1,21 @@
+
+
+.nav {
+    display: flex;
+    justify-content: space-around;
+    background-color: #000000;
+    padding: 10px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease-in-out;
+}
+
+.nav a:hover {
+    color: #ffd700;
+
+}

@@ -1,0 +1,16 @@
+.homepage {
+    text-align: center;
+    padding: 20px;
+    color: #333;
+}
+
+.homepage h1 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.homepage-details {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-top: 20px;
+}
