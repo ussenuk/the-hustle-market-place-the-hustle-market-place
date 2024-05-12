@@ -192,6 +192,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           // User is logged in
           sessionStorage.setItem("business_id", response.data.business_id);
           setIsLoggedIn(true);
+          window.location.reload();
         } else if (response.data.error) {
           // Handle errors
           setError(response.data.error);
@@ -262,13 +263,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
         <div>
           <div className="user-card">
             {/* Add the user image and name here */}
-            <img
-              src={
-                userImage ||
-                "/src/components/DashBoard/ServiceProviderDashboard/pages/default-image.png"
-              }
-              alt="User"
-            />
+            <img src={`http://localhost:5555${serviceProviderInfo.profile_picture_url}` || userImage} alt=""  />
             <span>
               Welcome{" "}
               <span className="green-text">
@@ -276,6 +271,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
               </span>
             </span>
           </div>
+          <p className="green-text">Business Description:</p>
+          <p>{serviceProviderInfo.bio}</p>
           <button onClick={handleDashboardAccess}> Dashboard Access</button>
           <button onClick={handleLogout}>Logout</button>
         </div>

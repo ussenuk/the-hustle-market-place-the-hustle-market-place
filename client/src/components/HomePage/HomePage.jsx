@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./homepage.css";
 import { Box } from "@mui/material";
 import ServiceCard from "./ServiceCard";
+import Footer from "../Footer/Footer";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -185,6 +186,7 @@ const HomePage = () => {
           ))}
         </Box>
       </div>
+      <Footer />
     </div>
   );
 };

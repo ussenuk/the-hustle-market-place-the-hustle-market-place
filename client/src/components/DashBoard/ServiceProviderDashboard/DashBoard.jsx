@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import DashBoardPage from '../DashBoardPage';
 import RightBar from './RightBar';
 
-function DashBoard({onLogout, onLogin, user,admin, onLogout2}) {
+function DashBoard({onLogout, onLogin, user,admin, onLogout2, goHome}) {
   // Retrieve dark mode state from localStorage or default to false
   const [isDark, setIsDark] = useState(
     localStorage.getItem('darkMode') === 'true' ? true : false
@@ -37,7 +37,7 @@ function DashBoard({onLogout, onLogin, user,admin, onLogout2}) {
     return (
       <div className={appClass}>
         <DashBoardHeader OpenSidebar={OpenSidebar} isDark={isDark} setIsDark={setIsDark} />
-        <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} handleMenuItemClick={handleMenuItemClick} onLogout={onLogout} onLogout2={onLogout2}/>
+        <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} handleMenuItemClick={handleMenuItemClick} onLogout={onLogout} onLogout2={onLogout2} goHome={goHome}/>
         <DashBoardPage selectedMenuItem={selectedMenuItem}/>
         <RightBar user={user}/>
         

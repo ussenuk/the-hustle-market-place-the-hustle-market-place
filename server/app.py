@@ -905,6 +905,36 @@ def get_reviews_with_average_rating():
     except Exception as e:
         error_message = f"Failed to get reviews with average rating: {str(e)}"
         return jsonify({'error': error_message}), 500
+
+@app.route('/reviews', methods=['GET'])
+def get_reviews():
+    try:
+        reviews = Review.query.all()
+        serialized_reviews = [{
+            'review_id': review.id,
+            'customer': review.customer_id,  # Assuming there's a 'name' attribute in the customer model
+            'stars_given': review.stars_given,
+            'comments': review.comments
+        } for review in reviews]
+        return jsonify(serialized_reviews)
+    except Exception as e:
+        error_message = f"Failed to get reviews: {str(e)}"
+        return jsonify({'error': error_message}), 500
+
+@app.route('/delete_review/<int:review_id>', methods=['DELETE'])
+def delete_review(review_id):
+    try:
+        review = Review.query.get(review_id)
+        if not review:
+            return jsonify({'message': 'Review not found'}), 404
+
+        db.session.delete(review)
+        db.session.commit()
+
+        return jsonify({'message': 'Review deleted successfully'})
+    except Exception as e:
+        error_message = f"Failed to delete review: {str(e)}"
+        return jsonify({'error': error_message}), 500
     
 
 

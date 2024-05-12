@@ -201,6 +201,10 @@ const AppContent = () => {
       }
        };
 
+  const handleNavigateHome = () => {
+  navigate('/');
+  };
+
   return (
     <div className={isDashboardRoute ? "" : "app-container"}>
       {/* Render Header and Navigation only if the route is not Dashboard */}
@@ -220,7 +224,7 @@ const AppContent = () => {
         <Route path="/servicespage" element={<ServicesPage />} />
         <Route path="/search" element={<Search />} />
         <Route path="/businesslogin" element={<BusinessLogin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>} />
-        <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin}/>} />
+        <Route path="/dashboard" element={<DashBoard  user={isLoggedIn} admin={isLoggedInAdmin} onLogin={handleLogin} onLogout={handleLogoutServiceProvider} onLogout2={handleLogoutAdmin} goHome={handleNavigateHome}/>} />
         <Route path="/search" element={<Search />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/new_message/:receiverId" element={<ComposeMessagePage />} />

@@ -6,12 +6,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./userlogin.css";
+import userImage from "../DashBoard/ServiceProviderDashboard/pages/user_prof.jpg"
 
 const UserAccess = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
   const [formData, setFormData] = useState({
     fullname: "",
     username: "",
@@ -92,12 +94,45 @@ const UserAccess = () => {
     setError(""); // Clear error messages when switching modes
   };
 
+  useEffect(() => {
+    const userId = sessionStorage.getItem("user_id");
+    // Retrieve value from Session storage
+    
+    // Make API call to fetch service providers
+    fetch("http://localhost:5555/user_name")
+      .then((response) => response.json())
+      .then((data) => {
+        // Find service provider with matching ID
+        const User = data.find(
+          (provider) => provider.id === parseInt(userId)
+        );
+        if (User) {
+          setUserInfo(User);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching service providers:", error)
+      );
+  }, []);
+
   return (
     <div className="user-access-container">
       {isLoggedIn ? (
         
         <div class="welcome-container">
-          <h2 class="welcome-message">Welcome!</h2>
+        <img
+              src={
+                userImage ||
+                "/src/components/DashBoard/ServiceProviderDashboard/pages/default-image.png"
+              }
+              alt="User"
+            />
+        <span>
+        Welcome{" "}
+        <span className="green-text">
+          {userInfo.user}
+        </span>
+      </span>
           <button class="logout-button" onClick={handleLogout}>Logout</button>
         </div>
       ) : (
