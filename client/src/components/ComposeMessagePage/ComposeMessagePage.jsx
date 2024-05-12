@@ -43,7 +43,7 @@ const ComposeMessagePage = () => {
     // Retrieve value from Session storage
     
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/user_name")
+    fetch("/user_name")
       .then((response) => response.json())
       .then((data) => {
         // Find service provider with matching ID
@@ -80,7 +80,7 @@ const ComposeMessagePage = () => {
 
 
     try {
-      await axios.post(`http://localhost:5555/new_message`, {
+      await axios.post(`/new_message`, {
         sender_id: senderId,
         receiver_id: receiverId,
         content: content,

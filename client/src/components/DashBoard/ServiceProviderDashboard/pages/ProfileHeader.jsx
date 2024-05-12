@@ -19,7 +19,7 @@ const ProfileHeader = () => {
       try {
         const user_id = sessionStorage.getItem('business_id');
         const user_type = 'service_provider';
-        const response = await axios.get(`http://127.0.0.1:5555/user/${user_id}/${user_type}`);
+        const response = await axios.get(`/user/${user_id}/${user_type}`);
         const serviceProvider = response.data;
         setFormData({
           fullname: serviceProvider.fullname,
@@ -55,7 +55,7 @@ const ProfileHeader = () => {
     try {
       const user_id = sessionStorage.getItem('business_id');
       const user_type = 'service_provider';
-      const response = await axios.patch(`http://127.0.0.1:5555/user/${user_id}/${user_type}`, formData);
+      const response = await axios.patch(`/user/${user_id}/${user_type}`, formData);
       console.log(response.data);
       closeModal();
     } catch (error) {

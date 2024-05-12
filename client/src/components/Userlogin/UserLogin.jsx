@@ -50,7 +50,7 @@ const UserAccess = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5555/${endpoint}`,
+        `/${endpoint}`,
         payload
       );
 
@@ -80,7 +80,7 @@ const UserAccess = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5555/logout");
+      await axios.get("/logout");
       sessionStorage.removeItem("user_id");
       setIsLoggedIn(false);
       navigate("/");
@@ -99,7 +99,7 @@ const UserAccess = () => {
     // Retrieve value from Session storage
     
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/user_name")
+    fetch("/user_name")
       .then((response) => response.json())
       .then((data) => {
         // Find service provider with matching ID

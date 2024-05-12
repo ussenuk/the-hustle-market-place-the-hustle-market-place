@@ -15,6 +15,17 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
 
   const [files, setFiles] = useState([]);
 
+
+  const [serviceButtonClicked, setServiceButtonClicked] = useState(false); // Track if the service list button is clicked
+
+  useEffect(() => {
+    // Check if the service list button has been clicked previously
+    const serviceButtonStatus = sessionStorage.getItem("serviceButtonClicked");
+    if (serviceButtonStatus) {
+      setServiceButtonClicked(true);
+    }
+  }, []);
+
   // Function to handle file uploads
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(
@@ -149,7 +160,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
 
       try {
         const response = await axios.post(
-          `http://localhost:5555/${endpoint}`,
+          `/${endpoint}`,
           formDataInstance,
           {
             headers: {
@@ -162,12 +173,14 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           // User is logged in
           sessionStorage.setItem("business_id", response.data.business_id);
           setIsLoggedIn(true);
+          sendServiceDetailsToBackend();
         } else if (response.data.message) {
           // Registration successful, prompt login
           alert("Registration successful, please log in."); // Optional: Use a more sophisticated notification system
           setIsRegistering(false); // Switch to login mode
           setError(""); // Clear any previous errors
           setFormData({ ...formData, password: "" }); // Clear password (and any other sensitive data)
+          
         }
       } catch (error) {
         if (
@@ -184,7 +197,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     } else {
       try {
         const response = await axios.post(
-          `http://localhost:5555/${endpoint}`,
+          `/${endpoint}`,
           new URLSearchParams(new FormData(e.target))
         );
 
@@ -208,7 +221,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5555/businesslogout");
+      await axios.get("/businesslogout");
       sessionStorage.removeItem("business_id");
       setIsLoggedIn(false);
       navigate("/");
@@ -236,7 +249,7 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     const serviceProviderId = sessionStorage.getItem("business_id");
 
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/service_provider")
+    fetch("/service_provider")
       .then((response) => response.json())
       .then((data) => {
         // Find service provider with matching ID
@@ -257,6 +270,49 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     setError("");
   };
 
+const sendServiceDetailsToBackend = async() =>{
+  const serviceProviderId = sessionStorage.getItem('business_id');
+  try {
+    await axios.post(`/addservices`, {
+      service_title: serviceProviderInfo.service_title,
+      service_category: serviceProviderInfo.service_category,
+      pricing: serviceProviderInfo.pricing,
+      hours_available: serviceProviderInfo.hours_available,
+      location: serviceProviderInfo.location,
+    },{
+      headers: {
+        "Content-Type": "application/json",
+        "ServiceProviderId": serviceProviderId, // Pass service provider ID in headers
+      },
+    });
+
+  }catch (error) {
+    console.error('Error sending message:', error);
+    if (error.response) {
+      
+      console.error(error.response.data);
+      console.error(error.response.status);
+      console.error(error.response.headers);
+    } else if (error.request) {
+      
+      console.error(error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error', error.message);
+    }
+    console.error(error.config);
+  }
+};
+
+
+const handleServicelisting = () => {
+  sendServiceDetailsToBackend();
+  sessionStorage.setItem("serviceButtonClicked", "true");
+  setServiceButtonClicked(true); // Mark the service list button as clicked
+  alert("Your Service has been successfully added to the Home page, please navigate.");
+};
+
+
   return (
     <div className="business-access-container">
       {isLoggedIn ? (
@@ -273,7 +329,12 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
           </div>
           <p className="green-text">Business Description:</p>
           <p>{serviceProviderInfo.bio}</p>
+
+          {!serviceButtonClicked && ( // Render the service list button only if it's not clicked
+            <button onClick={handleServicelisting}>List your service to Homepage</button>
+          )}
           <button onClick={handleDashboardAccess}> Dashboard Access</button>
+          
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (

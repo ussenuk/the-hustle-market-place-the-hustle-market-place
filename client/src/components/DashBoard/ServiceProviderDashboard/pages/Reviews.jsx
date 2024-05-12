@@ -6,7 +6,7 @@ function ReviewsList() {
   const [confirmDeleteIds, setConfirmDeleteIds] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5555/reviews")
+    fetch("/reviews")
       .then((response) => response.json())
       .then((data) => {
         setReviews(data);
@@ -22,7 +22,7 @@ function ReviewsList() {
 
   const confirmDelete = async (reviewId) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5555/delete_review/${reviewId}`, {
+      const response = await fetch(`/delete_review/${reviewId}`, {
         method: 'DELETE',
       });
       if (response.ok) {

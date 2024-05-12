@@ -9,7 +9,7 @@ function UsersList() {
     const [confirmDeleteIds, setConfirmDeleteIds] = useState([]);
 
     useEffect(()=>{
-        fetch("http://127.0.0.1:5555/users")
+        fetch("/users")
         .then((r) => r.json())
         .then((data) => {
           // Flatten the array of arrays into a single array of users
@@ -34,7 +34,7 @@ function UsersList() {
 
     const confirmDelete = async (userId, userType) => {
       try {
-        const response = await fetch(`http://127.0.0.1:5555/user/${userId}/${userType}`, {
+        const response = await fetch(`/user/${userId}/${userType}`, {
             method: 'DELETE',
         });
           if (response.ok) {

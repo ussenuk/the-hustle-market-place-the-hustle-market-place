@@ -14,7 +14,7 @@ export default function BasicTable() {
     useEffect(() => {
         const fetchBookingData = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5555/booking');
+                const response = await fetch('/booking');
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }

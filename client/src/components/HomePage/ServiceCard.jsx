@@ -145,7 +145,7 @@ const ServiceCard = ({
 
   const fetchAverageRating = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5555/get_reviews_with_average_rating`);
+      const response = await axios.get(`/get_reviews_with_average_rating`);
       console.log("API Response:", response.data);
   
       const bookingRatings = response.data;
@@ -159,7 +159,7 @@ const ServiceCard = ({
 
   const fetchRandomComment = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5555/get_random_comment/${serviceId}`);
+      const response = await axios.get(`/get_random_comment/${serviceId}`);
       console.log("Random Comment API Response:", response.data);
   
       const randomCommentData = response.data;

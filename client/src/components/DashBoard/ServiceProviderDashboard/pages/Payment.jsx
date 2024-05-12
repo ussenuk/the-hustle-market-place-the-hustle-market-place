@@ -13,7 +13,7 @@ function PaymentDetails() {
     useEffect(() => {
         const fetchPayments = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5555/payments');
+                const response = await fetch('/payments');
                 if (!response.ok) {
                     throw new Error('Failed to fetch payment details');
                 }

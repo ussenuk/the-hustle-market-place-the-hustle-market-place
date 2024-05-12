@@ -67,7 +67,7 @@ function InboxPage() {
         // Code to retrieve messages from the server
         const fetchMessages = async () => {
           try {
-            const response = await axios.get(`http://localhost:5555/messages/inbox/${userId}`);
+            const response = await axios.get(`/messages/inbox/${userId}`);
             setMessages(response.data);
             console.log(response.data);
           } catch (error) {
@@ -83,7 +83,7 @@ function InboxPage() {
         // Retrieve value from Session storage
         
         // Make API call to fetch service providers
-        fetch("http://localhost:5555/user_name")
+        fetch("/user_name")
           .then((response) => response.json())
           .then((data) => {
             // Find service provider with matching ID

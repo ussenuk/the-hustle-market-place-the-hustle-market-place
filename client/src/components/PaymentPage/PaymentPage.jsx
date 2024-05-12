@@ -19,7 +19,7 @@ const PaymentPage = () => {
     const fetchUserData = async () => {
       try {
         // Fetch service name
-        const serviceResponse = await fetch(`http://127.0.0.1:5555/search_service_name/${serviceId}`);
+        const serviceResponse = await fetch(`/search_service_name/${serviceId}`);
         if (serviceResponse.ok) {
           const serviceData = await serviceResponse.json();
           setServiceName(serviceData.service_name);
@@ -28,7 +28,7 @@ const PaymentPage = () => {
         }
 
         // Fetch service provider name
-        const serviceProviderResponse = await fetch(`http://127.0.0.1:5555/service_provider_name/${serviceId}`);
+        const serviceProviderResponse = await fetch(`/service_provider_name/${serviceId}`);
         if (serviceProviderResponse.ok) {
           const serviceProviderData = await serviceProviderResponse.json();
           setServiceProviderName(serviceProviderData.service_provider_name);
@@ -51,7 +51,7 @@ const PaymentPage = () => {
     // Retrieve value from Session storage
     
     // Make API call to fetch service providers
-    fetch("http://localhost:5555/user_name")
+    fetch("/user_name")
       .then((response) => response.json())
       .then((data) => {
         // Find service provider with matching ID

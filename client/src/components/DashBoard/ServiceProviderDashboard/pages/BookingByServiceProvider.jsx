@@ -15,7 +15,7 @@ export default function BasicTable() {
         const fetchBookingData = async () => {
             try {
                 const service_provider_id = sessionStorage.getItem('business_id'); // Replace with the actual service provider ID
-                const response = await fetch(`http://127.0.0.1:5555/bookings/${service_provider_id}`);
+                const response = await fetch(`/bookings/${service_provider_id}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
