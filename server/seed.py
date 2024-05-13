@@ -33,18 +33,18 @@ with app.app_context():
     db.session.commit()
 
     # Create sample service providers
-    service_provider1 = ServiceProvider(fullname='Julius Mwangi', username='jmwas', email='j@example.com', service_title='Photographer', service_category='Photography', pricing=50, location='New York')
-    service_provider2 = ServiceProvider(fullname='Beatrice Wambua', username='bobo', email='bobo@example.com', service_title='Graphic Designer', service_category='Design', pricing=60, location='Los Angeles')
-    service_provider3 = ServiceProvider(fullname='Will Smith', username='smith', email='smith@example.com', service_title='Web Developer', service_category='Development', pricing=70, location='San Francisco')
+    service_provider1 = ServiceProvider(fullname='Julius Mwangi', username='jmwas', email='j@example.com', service_title='Photographer', service_category='Photography', pricing=50, location='New York', business_description='Photographers usually take photos of people, places, animals, events and objects. The type of photographer you are and the categorisation of your photography business are often based on the subjects of your photography. There are many different types of photographers.', hours_available='8 AM to 10 PM', profile_picture='jmwas_profile_picture.jpg', work_images='jmwas_work_images.jpg')
+    service_provider2 = ServiceProvider(fullname='Beatrice Wambua', username='bobo', email='bobo@example.com', service_title='Graphic Designer', service_category='Design', pricing=60, location='Los Angeles', business_description='create visual communications such as adverts, branding, publicity materials and magazine layouts. Graphic designers (who may also be known as graphic artists) utilise graphic design skills to create media products such as magazines, labels, advertising and signage.', hours_available='8 AM to 10 PM', profile_picture='bobo_profile_picture.jpg', work_images='bobo_work_images.jpg')
+    service_provider3 = ServiceProvider(fullname='Will Smith', username='smith', email='smith@example.com', service_title='Web Developer', service_category='Development', pricing=70, location='San Francisco',business_description='A Web Developer, or Website Developer, is responsible for using their knowledge of programming languages to code websites and web applications. Their duties include communicating with clients to determine their needs and design preferences, creating code for the front and back-end of a website and running tests to ensure that they used the correct code strings.',hours_available='8 AM to 10 PM', profile_picture='smith_profile_picture.jpg', work_images='smith_work_images.jpg')
 
     # Add service providers to session and commit
     db.session.add_all([service_provider1, service_provider2, service_provider3])
     db.session.commit()
 
     # Create sample services
-    service1 = Service(service_title='Photography', service_category='Photography', service_provider_id=service_provider1.id)
-    service2 = Service(service_title='Graphic Design', service_category='Design', service_provider_id=service_provider2.id)
-    service3 = Service(service_title='Web Development', service_category='Development', service_provider_id=service_provider3.id)
+    service1 = Service(service_title='Photography', service_category='Photography', service_provider_id=service_provider1.id, pricing=50, location='New York', hours_available='8 AM to 5 PM')
+    service2 = Service(service_title='Graphic Design', service_category='Design', service_provider_id=service_provider2.id, pricing=60, location='Los Angeles', hours_available='8 AM to 5 PM')
+    service3 = Service(service_title='Web Development', service_category='Development', service_provider_id=service_provider3.id, pricing=70, location='San Francisco', hours_available='8 AM to 5 PM')
 
     # Add services to session and commit
     db.session.add_all([service1, service2, service3])

@@ -698,6 +698,11 @@ class ServiceProviders(Resource):
             service_provider_name = service_provider.fullname
             service_provider_service_title = service_provider.service_title
             service_provider_bio = service_provider.business_description
+            service_provider_service_category = service_provider.service_category
+            service_provider_hours_available = service_provider.hours_available
+            service_provider_location = service_provider.location
+            service_provider_pricing = service_provider.pricing
+
 
             # Construct filenames based on filename prefix
             filename_prefix = service_provider_username  # Assuming username is used as filename prefix
@@ -732,6 +737,10 @@ class ServiceProviders(Resource):
                 "video_url": video_url,
                 "work_images_url": work_images_url,
                 "registration_document_url": registration_document_url,
+                "service_category":service_provider_service_category,
+                "hours_available":service_provider_hours_available,
+                "location":service_provider_location,
+                "pricing": service_provider_pricing
                 # Add other fields as needed
             })
 

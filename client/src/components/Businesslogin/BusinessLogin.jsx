@@ -270,6 +270,8 @@ const BusinessLogin = ({isLoggedIn, setIsLoggedIn}) => {
     setError("");
   };
 
+console.log(serviceProviderInfo)
+
 const sendServiceDetailsToBackend = async() =>{
   const serviceProviderId = sessionStorage.getItem('business_id');
   try {
@@ -279,6 +281,7 @@ const sendServiceDetailsToBackend = async() =>{
       pricing: serviceProviderInfo.pricing,
       hours_available: serviceProviderInfo.hours_available,
       location: serviceProviderInfo.location,
+      service_provider_id:serviceProviderId
     },{
       headers: {
         "Content-Type": "application/json",
